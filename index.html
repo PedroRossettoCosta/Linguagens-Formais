@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abyssus Compiler 2.0 | Engenharia de Computação</title>
+    <style>
+        :root {
+            --bg-color: #0d0d0d;
+            --panel-bg: #161616;
+            --accent-color: #ff3c00;
+            --text-color: #e0e0e0;
+            --code-green: #32ff7e;
+            --ast-blue: #7efff5;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Fira Code', 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 95vh;
+        }
+
+        header {
+            border-bottom: 2px solid var(--accent-color);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 { color: var(--accent-color); font-size: 1.5rem; }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 15px;
+            flex-grow: 1;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .panel-header {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #222;
+        }
+
+        textarea {
+            background: transparent;
+            color: var(--code-green);
+            border: none;
+            resize: none;
+            flex-grow: 1;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+        }
+
+        pre {
+            margin: 0;
+            flex-grow: 1;
+            overflow: auto;
+            font-size: 13px;
+            color: var(--text-color);
+        }
+
+        #cpp-output { color: var(--ast-blue); }
+        #ast-output { color: #d1d1d1; }
+        #tokens-output { color: #ff9f1a; font-size: 11px; }
+
+        .btn-invoke {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .btn-invoke:hover {
+            background: #ff5e00;
+            box-shadow: 0 0 15px var(--accent-color);
+        }
+
+        /* Scrollbar Style */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #333; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>👹 ABYSSUS COMPILER 2.0</h1>
+        <span>Status: <strong id="status" style="color: gray;">Aguardando Ritual</strong></span>
+    </header>
+
+    <button class="btn-invoke" onclick="compilarRitual()">Executar Transpilação</button>
+
+    <div class="main-grid">
+        <div class="panel">
+            <div class="panel-header">Código Fonte Demoníaco (.ld)</div>
+            <textarea id="code-input" spellcheck="false">
+Sanguis led = 13;
+Sanguis_Fluens freq = 1.5;
+
+Vazium Exordium() {
+    Habitus(led, Ignis);
+}
+
+Vazium Inferna() {
+    Si (freq > 1.0) {
+        Incantare(led, Ignis);
+        Mora(500);
+        Incantare(led, Tenebrae);
+        Mora(500);
+    }
+}</textarea>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">Código C++ Gerado (Arduino)</div>
+            <pre id="cpp-output"></pre>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">Árvore Sintática Abstrata (AST)</div>
+            <pre id="ast-output"></pre>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">Tabela de Tokens (Léxico)</div>
+            <pre id="tokens-output"></pre>
+        </div>
+    </div>
+
+    <script>
+        async function compilarRitual() {
+            const codeArea = document.getElementById('code-input');
+            const cppArea = document.getElementById('cpp-output');
+            const astArea = document.getElementById('ast-output');
+            const tokenArea = document.getElementById('tokens-output');
+            const statusLabel = document.getElementById('status');
+
+            statusLabel.textContent = "Compilando...";
+            statusLabel.style.color = "yellow";
+
+            try {
+                const response = await fetch('http://localhost:5000/compile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: codeArea.value })
+                });
+
+                const data = await response.json();
+
+                if (data.status === "success") {
+                    statusLabel.textContent = "Sucesso!";
+                    statusLabel.style.color = "#32ff7e";
+
+                    cppArea.textContent = data.cpp;
+                    // Renderiza o JSON da AST de forma amigável
+                    astArea.textContent = JSON.stringify(data.ast, null, 2);
+                    // Exibe os tokens um por linha
+                    tokenArea.textContent = data.tokens.join('\n');
+                } else {
+                    throw new Error(data.error);
+                }
+
+            } catch (error) {
+                statusLabel.textContent = "Erro no Ritual";
+                statusLabel.style.color = "#ff3c00";
+                cppArea.textContent = "Erro: " + error.message;
+                astArea.textContent = "";
+                tokenArea.textContent = "";
+            }
+        }
+    </script>
+</body>
+</html>
