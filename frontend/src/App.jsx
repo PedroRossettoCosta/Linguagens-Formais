@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Header from './components/Header';
 import Panel from './components/Panel';
+import Editor from '@monaco-editor/react'; // NOVO: Importando o VS Code Engine
 
 function App() {
   const [codigo, setCodigo] = useState(`Sanguis led = 13;
@@ -19,18 +20,27 @@ Vazium Inferna() {
     }
 }`);
 
-  const [resultado, setResultado] = useState({
-    cpp: '',
-    ast: '',
-    tokens: ''
-  });
-
+  const [resultado, setResultado] = useState({ cpp: '', ast: '', tokens: '' });
   const [status, setStatus] = useState('Aguardando Ritual');
   const [statusColor, setStatusColor] = useState('gray');
+
+  // NOVO: Referências para o editor poder desenhar as linhas vermelhas
+  const editorRef = useRef(null);
+  const monacoRef = useRef(null);
+
+  function handleEditorDidMount(editor, monaco) {
+    editorRef.current = editor;
+    monacoRef.current = monaco;
+  }
 
   const compilarRitual = async () => {
     setStatus('Compilando...');
     setStatusColor('yellow');
+    
+    // Limpa os erros antigos antes de compilar
+    if (monacoRef.current && editorRef.current) {
+      monacoRef.current.editor.setModelMarkers(editorRef.current.getModel(), 'abyssus', []);
+    }
 
     try {
       const response = await fetch('http://localhost:5000/compile', {
@@ -44,45 +54,65 @@ Vazium Inferna() {
       if (data.status === 'success') {
         setStatus('Sucesso!');
         setStatusColor('#32ff7e');
-        
         setResultado({
           cpp: data.cpp,
           ast: JSON.stringify(data.ast, null, 2),
           tokens: data.tokens.join('\n')
         });
       } else {
-        throw new Error(data.error);
+        // NOVO: Processamento de Erros Inteligente
+        setStatus('Erro no Ritual');
+        setStatusColor('#ff3c00');
+        setResultado({ cpp: '', ast: '', tokens: '' });
+
+        if (data.erros && monacoRef.current) {
+          // Transforma o erro do Python em uma linha vermelha no Editor
+          const markers = data.erros.map((err) => ({
+            startLineNumber: err.linha,
+            startColumn: 1,
+            endLineNumber: err.linha,
+            endColumn: 100, // Marca a linha toda
+            message: err.mensagem,
+            severity: monacoRef.current.MarkerSeverity.Error
+          }));
+          
+          monacoRef.current.editor.setModelMarkers(editorRef.current.getModel(), 'abyssus', markers);
+        }
       }
     } catch (error) {
-      setStatus('Erro no Ritual');
+      setStatus('Servidor Caído');
       setStatusColor('#ff3c00');
-      
-      setResultado({
-        cpp: `Erro: ${error.message}`,
-        ast: '',
-        tokens: ''
-      });
     }
   };
+
+  const baixarArquivoIoT = () => { /* Sua função de baixar continua igual */ };
 
   return (
     <div className="min-h-screen p-5 font-mono flex flex-col">
       <Header status={status} statusColor={statusColor} />
 
-      <button 
-        onClick={compilarRitual}
-        className="bg-abyss-accent hover:bg-abyss-accent-hover text-white font-bold py-3 px-6 uppercase tracking-widest transition-all duration-300 shadow-[0_0_10px_#ff3c00] hover:shadow-[0_0_20px_#ff3c00] mb-5 w-fit"
-      >
-        Executar Transpilação
-      </button>
+      <div className="flex gap-4 mb-5">
+        <button onClick={compilarRitual} className="bg-abyss-accent hover:bg-abyss-accent-hover text-white font-bold py-3 px-6 uppercase tracking-widest transition-all duration-300 shadow-[0_0_10px_#ff3c00]">
+          Executar Transpilação
+        </button>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-grow">
         <Panel title="Código Fonte Demoníaco (.ld)" textColor="text-abyss-green">
-          <textarea 
-            className="w-full h-full bg-transparent border-none resize-none outline-none font-inherit"
-            spellCheck="false"
+          {/* NOVO: Substituímos o <textarea> pelo Monaco Editor */}
+          <Editor
+            height="100%"
+            theme="vs-dark"
+            defaultLanguage="c" // Ajuda a colorir as chaves e parênteses nativamente
             value={codigo}
-            onChange={(e) => setCodigo(e.target.value)}
+            onChange={(value) => setCodigo(value)}
+            onMount={handleEditorDidMount}
+            options={{
+              minimap: { enabled: false },
+              fontSize: 16,
+              fontFamily: "'Fira Code', monospace",
+              scrollBeyondLastLine: false,
+            }}
           />
         </Panel>
 
@@ -90,6 +120,7 @@ Vazium Inferna() {
           <pre>{resultado.cpp}</pre>
         </Panel>
 
+        {/* ... (os outros dois painéis de AST e Tokens continuam aqui embaixo igual) ... */}
         <Panel title="Árvore Sintática Abstrata (AST)" textColor="text-gray-300">
           <pre>{resultado.ast}</pre>
         </Panel>
@@ -97,6 +128,7 @@ Vazium Inferna() {
         <Panel title="Tabela de Tokens (Léxico)" textColor="text-orange-400 text-xs">
           <pre>{resultado.tokens}</pre>
         </Panel>
+
       </div>
     </div>
   );

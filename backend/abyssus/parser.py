@@ -1,8 +1,14 @@
+import difflib
+
 from sly import Parser
+from abyssus.constants import ritual_keywords
 from abyssus.lexer import LDLexer
 
 class LDParser(Parser):
     tokens = LDLexer.tokens
+    
+    def __init__(self):
+            self.erros_sintaticos = []
 
     precedence = (
         ('left', PLUS, MINUS),
@@ -104,3 +110,32 @@ class LDParser(Parser):
     @_('')
     def empty(self, p):
         pass
+    
+    def error(self, p):
+            if p:
+                # Pega a palavra que causou o erro
+                palavra_errada = str(p.value)
+                
+                # Tenta achar a palavra reservada mais parecida com o que foi digitado (mínimo de 60% de semelhança)
+                sugestoes = difflib.get_close_matches(palavra_errada, ritual_keywords.keys(), n=1, cutoff=0.6)
+                
+                mensagem = f"Profanação Sintática: Token inesperado '{palavra_errada}'."
+                
+                # Se achou uma sugestão, adiciona na mensagem!
+                if sugestoes:
+                    mensagem += f" O ritual exige '{sugestoes[0]}'? (Você quis dizer '{sugestoes[0]}'?)"
+                elif palavra_errada in ['{', '}', '(', ')', ';']:
+                    mensagem = f"Desequilíbrio de escopo. Símbolo solto: '{palavra_errada}'"
+                    
+                self.erros_sintaticos.append({
+                    "linha": p.lineno,
+                    "mensagem": mensagem
+                })
+                
+                # Descarta o token ruim e tenta continuar a compilação (para achar mais de 1 erro por vez)
+                self.errok()
+            else:
+                self.erros_sintaticos.append({
+                    "linha": 1, # Fallback
+                    "mensagem": "O ritual terminou abruptamente. Faltou fechar uma chave '}' ou ponto e vírgula ';'?"
+                })

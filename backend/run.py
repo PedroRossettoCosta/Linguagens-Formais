@@ -28,8 +28,15 @@ def compile_ritual():
         tokens = list(lexer.tokenize(code))
         ast = parser.parse(iter(tokens))
         
+        # Se o nosso parser encontrou erros (a lista que criamos não está vazia)
+        if len(parser.erros_sintaticos) > 0:
+            return jsonify({
+                "status": "error",
+                "erros": parser.erros_sintaticos # Mandamos a lista detalhada
+            }), 400
+            
         if not ast:
-            return jsonify({"error": "O ritual está sintaticamente incompleto."}), 400
+            return jsonify({"status": "error", "erros": [{"linha": 1, "mensagem": "Ritual vazio ou inválido."}]}), 400
             
         cpp_output = transpiler.translate(ast)
         
@@ -40,7 +47,8 @@ def compile_ritual():
             "tokens": [str(t) for t in tokens]
         })
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        # Erro fatal de fallback
+        return jsonify({"status": "error", "erros": [{"linha": 1, "mensagem": str(e)}]}), 400
 
 if __name__ == '__main__':
     print(f"Iniciando o servidor do Compilador Abyssus na porta {app.config['PORT']}...")
