@@ -66,12 +66,11 @@ Vazium Inferna() {
         setResultado({ cpp: '', ast: '', tokens: '' });
 
         if (data.erros && monacoRef.current) {
-          // Transforma o erro do Python em uma linha vermelha no Editor
           const markers = data.erros.map((err) => ({
             startLineNumber: err.linha,
             startColumn: 1,
             endLineNumber: err.linha,
-            endColumn: 100, // Marca a linha toda
+            endColumn: 100,
             message: err.mensagem,
             severity: monacoRef.current.MarkerSeverity.Error
           }));
@@ -85,15 +84,41 @@ Vazium Inferna() {
     }
   };
 
-  const baixarArquivoIoT = () => { /* Sua função de baixar continua igual */ };
+  const baixarArquivoIoT = () => {
+      if (!resultado.cpp || resultado.cpp.startsWith('Erro')) {
+        alert("⚠️ Você precisa compilar um ritual com sucesso antes de extrair sua essência!");
+        return;
+      }
+      
+      const blob = new Blob([resultado.cpp], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'ritual_sagrado.iot';
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    };
 
   return (
     <div className="min-h-screen p-5 font-mono flex flex-col">
       <Header status={status} statusColor={statusColor} />
 
       <div className="flex gap-4 mb-5">
-        <button onClick={compilarRitual} className="bg-abyss-accent hover:bg-abyss-accent-hover text-white font-bold py-3 px-6 uppercase tracking-widest transition-all duration-300 shadow-[0_0_10px_#ff3c00]">
+        <button 
+          onClick={compilarRitual} 
+          className="bg-abyss-accent hover:bg-abyss-accent-hover text-white font-bold py-3 px-6 uppercase tracking-widest transition-all duration-300 shadow-[0_0_10px_#ff3c00]"
+        >
           Executar Transpilação
+        </button>
+
+        <button 
+          onClick={baixarArquivoIoT}
+          disabled={!resultado.cpp || resultado.cpp.startsWith('Erro')}
+          className="bg-abyss-panel border border-abyss-accent text-abyss-accent hover:bg-gray-900 hover:text-white font-bold py-3 px-6 uppercase tracking-widest transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Baixar (.iot)
         </button>
       </div>
 
