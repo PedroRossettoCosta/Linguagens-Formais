@@ -1,3 +1,0 @@
-sly
-flask 
-flask-cors
