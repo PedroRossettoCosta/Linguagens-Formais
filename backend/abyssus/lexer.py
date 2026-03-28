@@ -1,8 +1,8 @@
+import difflib
 from sly import Lexer
 from abyssus.constants import ritual_keywords
 
 class LDLexer(Lexer):
-    # Usando STRINGS explicitamente para garantir que o SLY registre os tokens corretamente
     tokens = { 
         'ID', 'NUMBER', 'FLOAT_NUM', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 
         'EQUALS', 'DEQUALS', 'LPAREN', 'RPAREN', 'LBRACE', 'RBRACE', 
@@ -11,6 +11,10 @@ class LDLexer(Lexer):
     
     ignore = ' \t'
     ignore_newline = r'\n+'
+
+    def __init__(self):
+        # NOVO: O Lexer agora guarda seus próprios erros de digitação
+        self.erros_lexicos = []
 
     # Tokens de Operadores e Símbolos
     DEQUALS = r'=='
@@ -32,23 +36,23 @@ class LDLexer(Lexer):
     FLOAT_NUM = r'\d+\.\d+'
     NUMBER    = r'\d+'
     
-    # Identificadores (Expressão regular inline para a metaclass do SLY não se perder)
-    ID = r'[a-zA-Z_][a-zA-Z0-9_]*'
-    
-    # Mapeamento de Palavras-chave explícito
-    ID['Sanguis']        = 'SANGUIS'
-    ID['Sanguis_Fluens'] = 'SANGUIS_FLUENS'
-    ID['Vazium']         = 'VAZIUM'
-    ID['Exordium']       = 'EXORDIUM'
-    ID['Inferna']        = 'INFERNA'
-    ID['Habitus']        = 'HABITUS'
-    ID['Incantare']      = 'INCANTARE'
-    ID['Mora']           = 'MORA'
-    ID['Ignis']          = 'IGNIS'
-    ID['Tenebrae']       = 'TENEBRAE'
-    ID['Si']             = 'SI'
-    ID['Tormentum']      = 'TORMENTUM'
-    ID['Redditum']       = 'REDDITUM'
+    # === A MÁGICA DA VALIDAÇÃO LÉXICA ===
+    @_(r'[a-zA-Z_][a-zA-Z0-9_]*')
+    def ID(self, t):
+        # 1. É uma palavra reservada exata?
+        if t.value in ritual_keywords:
+            t.type = ritual_keywords[t.value]
+        else:
+            # 2. Se não for, verifica se o usuário não digitou errado!
+            # Ignoramos variáveis muito curtas (como 'led', 'x', 'y') para não dar falso positivo
+            if len(t.value) >= 3:
+                sugestoes = difflib.get_close_matches(t.value, ritual_keywords.keys(), n=1, cutoff=0.75)
+                if sugestoes:
+                    self.erros_lexicos.append({
+                        "linha": t.lineno,
+                        "mensagem": f"Heresia Léxica: Palavra '{t.value}' desconhecida. Você quis invocar '{sugestoes[0]}'?"
+                    })
+        return t
 
     @_(r'\d+\.\d+')
     def FLOAT_NUM(self, t):
@@ -64,5 +68,8 @@ class LDLexer(Lexer):
         self.lineno += t.value.count('\n')
 
     def error(self, t):
-        print(f"Erro Léxico: Caractere profano '{t.value[0]}' na linha {self.lineno}")
+        self.erros_lexicos.append({
+            "linha": self.lineno,
+            "mensagem": f"Caractere totalmente alienígena e profano '{t.value[0]}'."
+        })
         self.index += 1
