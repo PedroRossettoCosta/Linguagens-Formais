@@ -1,10 +1,13 @@
 from sly import Lexer
-from abyssus.constants import ritual_keywords, REGEX_ID
+from abyssus.constants import ritual_keywords
 
 class LDLexer(Lexer):
-    # O conjunto de tokens continua pegando os valores dinamicamente
-    tokens = { ID, NUMBER, FLOAT_NUM, PLUS, MINUS, TIMES, DIVIDE, EQUALS, DEQUALS,
-               LPAREN, RPAREN, LBRACE, RBRACE, SEMI, COMMA, LT, GT } | set(ritual_keywords.values())
+    # Usando STRINGS explicitamente para garantir que o SLY registre os tokens corretamente
+    tokens = { 
+        'ID', 'NUMBER', 'FLOAT_NUM', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 
+        'EQUALS', 'DEQUALS', 'LPAREN', 'RPAREN', 'LBRACE', 'RBRACE', 
+        'SEMI', 'COMMA', 'LT', 'GT' 
+    } | set(ritual_keywords.values())
     
     ignore = ' \t'
     ignore_newline = r'\n+'
@@ -29,10 +32,10 @@ class LDLexer(Lexer):
     FLOAT_NUM = r'\d+\.\d+'
     NUMBER    = r'\d+'
     
-    # Identificadores
-    ID = REGEX_ID
+    # Identificadores (Expressão regular inline para a metaclass do SLY não se perder)
+    ID = r'[a-zA-Z_][a-zA-Z0-9_]*'
     
-    # Mapeamento de Palavras-chave explícito (evita o erro da metaclasse SLY)
+    # Mapeamento de Palavras-chave explícito
     ID['Sanguis']        = 'SANGUIS'
     ID['Sanguis_Fluens'] = 'SANGUIS_FLUENS'
     ID['Vazium']         = 'VAZIUM'

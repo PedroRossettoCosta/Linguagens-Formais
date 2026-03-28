@@ -4,7 +4,6 @@ from abyssus.lexer import LDLexer
 class LDParser(Parser):
     tokens = LDLexer.tokens
 
-    # Precedência Matemática (Hierarquia de operações)
     precedence = (
         ('left', PLUS, MINUS),
         ('left', TIMES, DIVIDE),
@@ -58,19 +57,20 @@ class LDParser(Parser):
         return ('LOOP_BLOCK', p.statements)
 
     # --- FUNÇÕES NATIVAS ---
-    @_('HABITUS LPAREN expr COMMA ID RPAREN SEMI')
+    # Agora aceitam expressões no lugar do estado, permitindo Ignis/Tenebrae
+    @_('HABITUS LPAREN expr COMMA expr RPAREN SEMI')
     def statement(self, p):
-        return ('PIN_MODE', p.expr, p.ID)
+        return ('PIN_MODE', p.expr0, p.expr1)
 
-    @_('INCANTARE LPAREN expr COMMA ID RPAREN SEMI')
+    @_('INCANTARE LPAREN expr COMMA expr RPAREN SEMI')
     def statement(self, p):
-        return ('DIGITAL_WRITE', p.expr, p.ID)
+        return ('DIGITAL_WRITE', p.expr0, p.expr1)
 
     @_('MORA LPAREN expr RPAREN SEMI')
     def statement(self, p):
         return ('DELAY', p.expr)
     
-    # --- EXPRESSÕES MATEMÁTICAS ---
+    # --- EXPRESSÕES MATEMÁTICAS E CONSTANTES ---
     @_('expr PLUS expr', 'expr MINUS expr', 'expr TIMES expr', 'expr DIVIDE expr')
     def expr(self, p):
         return ('BINOP', p[1], p.expr0, p.expr1)
@@ -86,6 +86,15 @@ class LDParser(Parser):
     @_('FLOAT_NUM')
     def expr(self, p):
         return ('FLOAT_LIT', p.FLOAT_NUM)
+        
+    # Nossos novos tokens agora são tratados como valores!
+    @_('IGNIS')
+    def expr(self, p):
+        return ('CONST_STATE', 'HIGH')
+
+    @_('TENEBRAE')
+    def expr(self, p):
+        return ('CONST_STATE', 'LOW')
 
     # --- CONDIÇÕES ---
     @_('expr DEQUALS expr', 'expr LT expr', 'expr GT expr')
