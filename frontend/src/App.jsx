@@ -103,7 +103,7 @@ Vazium Inferna() {
           <Editor
             height="100%"
             theme="vs-dark"
-            defaultLanguage="c" // Ajuda a colorir as chaves e parênteses nativamente
+            defaultLanguage="c"
             value={codigo}
             onChange={(value) => setCodigo(value)}
             onMount={handleEditorDidMount}
@@ -112,6 +112,8 @@ Vazium Inferna() {
               fontSize: 16,
               fontFamily: "'Fira Code', monospace",
               scrollBeyondLastLine: false,
+              fixedOverflowWidgets: true, 
+              padding: { top: 15 } 
             }}
           />
         </Panel>
