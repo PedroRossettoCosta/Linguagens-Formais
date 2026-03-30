@@ -110,7 +110,7 @@ Vazium Inferna() {
           onClick={compilarRitual} 
           className="bg-abyss-accent hover:bg-abyss-accent-hover text-white font-bold py-3 px-6 uppercase tracking-widest transition-all duration-300 shadow-[0_0_10px_#ff3c00]"
         >
-          Executar Transpilação
+          Executar
         </button>
 
         <button 
@@ -123,7 +123,7 @@ Vazium Inferna() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-grow">
-        <Panel title="Código Fonte Demoníaco (.ld)" textColor="text-abyss-green">
+        <Panel title="Código Fonte Sobrenatural (.ld)" textColor="text-abyss-green">
           {/* NOVO: Substituímos o <textarea> pelo Monaco Editor */}
           <Editor
             height="100%"

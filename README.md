@@ -1,4 +1,4 @@
-# 👹 Abyssus Compiler 2.0
+# Abyssus Compiler
 
 ## 🎯 Intuito do Projeto
 
