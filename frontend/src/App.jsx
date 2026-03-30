@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import Header from './components/Header';
 import Panel from './components/Panel';
+import ASTGraph from './components/ASTGraph';
 import Editor from '@monaco-editor/react'; // NOVO: Importando o VS Code Engine
 
 function App() {
@@ -20,7 +21,7 @@ Vazium Inferna() {
     }
 }`);
 
-  const [resultado, setResultado] = useState({ cpp: '', ast: '', tokens: '' });
+  const [resultado, setResultado] = useState({ cpp: '', ast: null, tokens: '' });
   const [status, setStatus] = useState('Aguardando Ritual');
   const [statusColor, setStatusColor] = useState('gray');
 
@@ -56,14 +57,14 @@ Vazium Inferna() {
         setStatusColor('#32ff7e');
         setResultado({
           cpp: data.cpp,
-          ast: JSON.stringify(data.ast, null, 2),
+          ast: data.ast,
           tokens: data.tokens.join('\n')
         });
       } else {
         // NOVO: Processamento de Erros Inteligente
         setStatus('Erro no Ritual');
         setStatusColor('#ff3c00');
-        setResultado({ cpp: '', ast: '', tokens: '' });
+        setResultado({ cpp: '', ast: null, tokens: '' });
 
         if (data.erros && monacoRef.current) {
           const markers = data.erros.map((err) => ({
@@ -149,7 +150,7 @@ Vazium Inferna() {
 
         {/* ... (os outros dois painéis de AST e Tokens continuam aqui embaixo igual) ... */}
         <Panel title="Árvore Sintática Abstrata (AST)" textColor="text-gray-300">
-          <pre>{resultado.ast}</pre>
+          <ASTGraph ast={resultado.ast} />
         </Panel>
 
         <Panel title="Tabela de Tokens (Léxico)" textColor="text-orange-400 text-xs">
