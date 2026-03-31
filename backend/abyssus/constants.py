@@ -16,7 +16,8 @@ ritual_keywords = {
     'Tenebrae': 'TENEBRAE',
     'Si': 'SI',
     'Tormentum': 'TORMENTUM',
-    'Redditum': 'REDDITUM'
+    'Redditum': 'REDDITUM',
+    'Revelare': 'REVELARE'
 }
 
 # Padrões Regex (Expressões Regulares)

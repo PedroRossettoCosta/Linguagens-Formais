@@ -1,33 +1,49 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Header from './components/Header';
 import Panel from './components/Panel';
 import ASTGraph from './components/ASTGraph';
-import Editor from '@monaco-editor/react'; // NOVO: Importando o VS Code Engine
+import Editor from '@monaco-editor/react';
 
 function App() {
+  // NOVO: Estado para controlar a tela de introdução
+  const [despertando, setDespertando] = useState(true);
+  const [esconderIntro, setEsconderIntro] = useState(false);
+
   const [codigo, setCodigo] = useState(`Sanguis led = 13;
-Sanguis_Fluens freq = 1.5;
+Sanguis_Fluens pressao = 1.0;
 
 Vazium Exordium() {
+    Revelare("Iniciando a estufa inteligente...");
     Habitus(led, Ignis);
 }
 
 Vazium Inferna() {
-    Si (freq > 1.0) {
+    pressao = pressao + 0.5;
+    
+    Si (pressao > 1.2) {
+        Revelare("Cuidado! Pressao subiu muito!");
         Incantare(led, Ignis);
-        Mora(500);
+        Mora(1000);
         Incantare(led, Tenebrae);
-        Mora(500);
     }
 }`);
 
-  const [resultado, setResultado] = useState({ cpp: '', ast: null, tokens: '' });
+  const [resultado, setResultado] = useState({ cpp: '', ast: null, tokens: '', logs: [] });
   const [status, setStatus] = useState('Aguardando Ritual');
   const [statusColor, setStatusColor] = useState('gray');
 
-  // NOVO: Referências para o editor poder desenhar as linhas vermelhas
   const editorRef = useRef(null);
   const monacoRef = useRef(null);
+
+  // NOVO: Efeito que roda ao abrir a página. Espera 2.5s e remove a introdução.
+  useEffect(() => {
+    const timerIntro = setTimeout(() => {
+      setDespertando(false);
+      // Remove o elemento do DOM completamente após a animação de desvanecer terminar
+      setTimeout(() => setEsconderIntro(true), 1500); 
+    }, 2500);
+    return () => clearTimeout(timerIntro);
+  }, []);
 
   function handleEditorDidMount(editor, monaco) {
     editorRef.current = editor;
@@ -38,7 +54,6 @@ Vazium Inferna() {
     setStatus('Compilando...');
     setStatusColor('yellow');
     
-    // Limpa os erros antigos antes de compilar
     if (monacoRef.current && editorRef.current) {
       monacoRef.current.editor.setModelMarkers(editorRef.current.getModel(), 'abyssus', []);
     }
@@ -58,13 +73,13 @@ Vazium Inferna() {
         setResultado({
           cpp: data.cpp,
           ast: data.ast,
-          tokens: data.tokens.join('\n')
+          tokens: data.tokens.join('\n'),
+          logs: data.logs || []
         });
       } else {
-        // NOVO: Processamento de Erros Inteligente
         setStatus('Erro no Ritual');
         setStatusColor('#ff3c00');
-        setResultado({ cpp: '', ast: null, tokens: '' });
+        setResultado({ cpp: '', ast: null, tokens: '', logs: [] });
 
         if (data.erros && monacoRef.current) {
           const markers = data.erros.map((err) => ({
@@ -103,15 +118,30 @@ Vazium Inferna() {
     };
 
   return (
-    <div className="min-h-screen p-5 font-mono flex flex-col">
+    // NOVO: A classe 'ritual-ativo' é aplicada dinamicamente quando está compilando!
+    <div className={`min-h-screen p-5 font-mono flex flex-col bg-[#0f0f0f] text-gray-200 ${status === 'Compilando...' ? 'ritual-ativo' : 'transition-all duration-700'}`}>
+      
+      {/* NOVO: A Splash Screen (Tela de Introdução) */}
+      {!esconderIntro && (
+        <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#050505] ${!despertando ? 'intro-desaparecendo' : ''}`}>
+          <h1 className="text-abyss-accent text-5xl md:text-7xl font-bold tracking-widest texto-sinistro uppercase text-center">
+            Abyssus
+          </h1>
+          <p className="mt-6 text-gray-500 tracking-[0.3em] uppercase text-sm animate-pulse">
+            Despertando o Motor do Compilador...
+          </p>
+        </div>
+      )}
+
+      {/* O resto da sua aplicação continua intacto abaixo! */}
       <Header status={status} statusColor={statusColor} />
 
-      <div className="flex gap-4 mb-5">
+      <div className="flex gap-4 mb-5 z-10">
         <button 
           onClick={compilarRitual} 
-          className="bg-abyss-accent hover:bg-abyss-accent-hover text-white font-bold py-3 px-6 uppercase tracking-widest transition-all duration-300 shadow-[0_0_10px_#ff3c00]"
+          className="bg-abyss-accent hover:bg-abyss-accent-hover text-white font-bold py-3 px-6 uppercase tracking-widest transition-all duration-300 shadow-[0_0_10px_#ff3c00] hover:shadow-[0_0_25px_#ff3c00]"
         >
-          Executar Transpilação
+          Executar
         </button>
 
         <button 
@@ -123,9 +153,8 @@ Vazium Inferna() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-grow">
-        <Panel title="Código Fonte Demoníaco (.ld)" textColor="text-abyss-green">
-          {/* NOVO: Substituímos o <textarea> pelo Monaco Editor */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-grow z-10">
+        <Panel title="Código Fonte Sobrenatural (.ld)" textColor="text-abyss-green">
           <Editor
             height="100%"
             theme="vs-dark"
@@ -148,7 +177,33 @@ Vazium Inferna() {
           <pre>{resultado.cpp}</pre>
         </Panel>
 
-        {/* ... (os outros dois painéis de AST e Tokens continuam aqui embaixo igual) ... */}
+        <div className="lg:col-span-2 h-64">
+          <Panel title="Terminal de Revelação (Simulador Mágico)" textColor="text-gray-300">
+            <div className="bg-[#0a0a0a] h-full w-full p-4 font-mono text-sm overflow-auto border border-gray-900 rounded shadow-inner">
+              {resultado.logs && resultado.logs.length > 0 ? (
+                resultado.logs.map((log, index) => {
+                  let cor = "text-gray-400";
+                  if (log.includes("[SISTEMA]")) cor = "text-blue-400 font-bold";
+                  if (log.includes("[HARDWARE]")) cor = "text-yellow-500";
+                  if (log.includes("[REVELAÇÃO]")) cor = "text-green-400 text-base";
+                  if (log.includes("[TEMPO]")) cor = "text-purple-400 italic";
+
+                  return (
+                    <div key={index} className={`mb-1 ${cor} tracking-wide`}>
+                      <span className="opacity-50 mr-2">{">"}</span>
+                      {log}
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-gray-600 italic animate-pulse">
+                  O terminal aguarda a invocação do ritual...
+                </div>
+              )}
+            </div>
+          </Panel>
+        </div>
+
         <Panel title="Árvore Sintática Abstrata (AST)" textColor="text-gray-300">
           <ASTGraph ast={resultado.ast} />
         </Panel>
@@ -156,7 +211,6 @@ Vazium Inferna() {
         <Panel title="Tabela de Tokens (Léxico)" textColor="text-orange-400 text-xs">
           <pre>{resultado.tokens}</pre>
         </Panel>
-
       </div>
     </div>
   );

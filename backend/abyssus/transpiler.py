@@ -1,3 +1,6 @@
+from platform import node
+
+
 class LDTranspiler:
     def translate(self, ast):
         cpp_code = "#include <Arduino.h>\n\n"
@@ -42,4 +45,8 @@ class LDTranspiler:
             return f"delay({self.visit(node[1])});\n"
         elif ntype == 'RETURN':
             return f"return {self.visit(node[1])};\n"
+        elif ntype == 'PRINT':
+            return f"Serial.println({self.visit(node[1])});\n"
+        elif ntype == 'STRING_LIT':
+            return f'"{node[1]}"'
         return ""

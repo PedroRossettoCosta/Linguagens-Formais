@@ -1,8 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import sys
 
-# Importando as configurações e o motor do compilador
+from abyssus.interpreter import LDInterpreter
 from config import Config
 from abyssus.lexer import LDLexer
 from abyssus.parser import LDParser
@@ -58,11 +57,15 @@ def compile_ritual():
             # Se tudo estiver perfeito, gera o C++
             cpp_output = transpiler.translate(ast)
             
+            interpretador = LDInterpreter()
+            logs_execucao = interpretador.execute(ast)
+            
             return jsonify({
                 "status": "success",
                 "ast": ast,
                 "cpp": cpp_output,
-                "tokens": [str(t) for t in tokens]
+                "tokens": [str(t) for t in tokens],
+                "logs": logs_execucao # <--- Enviando para o Frontend
             })
     except Exception as e:
         # Fallback de segurança do servidor
