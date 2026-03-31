@@ -4,7 +4,7 @@ from abyssus.constants import ritual_keywords
 
 class LDLexer(Lexer):
     tokens = { 
-        'ID', 'NUMBER', 'FLOAT_NUM', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 
+        'ID', 'NUMBER', 'FLOAT_NUM','STRING_LIT', 'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 
         'EQUALS', 'DEQUALS', 'LPAREN', 'RPAREN', 'LBRACE', 'RBRACE', 
         'SEMI', 'COMMA', 'LT', 'GT' 
     } | set(ritual_keywords.values())
@@ -62,6 +62,11 @@ class LDLexer(Lexer):
     @_(r'\d+')
     def NUMBER(self, t):
         t.value = int(t.value)
+        return t
+    
+    @_(r'\".*?\"')
+    def STRING_LIT(self, t):
+        t.value = t.value[1:-1]
         return t
 
     def ignore_newline(self, t):

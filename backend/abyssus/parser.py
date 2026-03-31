@@ -72,6 +72,10 @@ class LDParser(Parser):
     @_('MORA LPAREN expr RPAREN SEMI')
     def statement(self, p):
         return ('DELAY', p.expr)
+
+    @_('REVELARE LPAREN expr RPAREN SEMI')
+    def statement(self, p):
+        return ('PRINT', p.expr)
     
     # --- EXPRESSÕES MATEMÁTICAS E CONSTANTES ---
     @_('expr PLUS expr', 'expr MINUS expr', 'expr TIMES expr', 'expr DIVIDE expr')
@@ -89,6 +93,10 @@ class LDParser(Parser):
     @_('FLOAT_NUM')
     def expr(self, p):
         return ('FLOAT_LIT', p.FLOAT_NUM)
+
+    @_('STRING_LIT')
+    def expr(self, p):
+        return ('STRING_LIT', p.STRING_LIT)
         
     # Nossos novos tokens agora são tratados como valores!
     @_('IGNIS')
