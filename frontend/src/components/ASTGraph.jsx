@@ -26,10 +26,11 @@ const nodeColors = {
   ANALOG_WRITE: '#32ff7e',  // Fluxus
   ANALOG_READ: '#32ff7e',   // Percipere
   DELAY: '#32ff7e',         // Mora
+  PRINT: '#a78bfa',         // NOVO: Revelare (Roxo Místico)
   RETURN: '#f472b6',        // Redditum
   INT_LIT: '#94a3b8',
   FLOAT_LIT: '#94a3b8',
-  STRING_LIT: '#94a3b8',
+  STRING_LIT: '#94a3b8',    // NOVO: Textos entre aspas
   VAR: '#e0e0e0',
   CONST_STATE: '#fbbf24',   // Ignis / Tenebrae
   CONDITION: '#ffd700',
@@ -83,6 +84,8 @@ function getLabel(node) {
       return 'Percipere';
     case 'DELAY':
       return 'Mora';
+    case 'PRINT':
+      return 'Revelare';
     case 'RETURN':
       return 'Redditum';
     case 'INT_LIT':
@@ -134,7 +137,7 @@ function getChildren(node) {
     case 'ANALOG_READ':
       return node[1] ? [node[1]] : [];
     case 'DELAY':
-      return node[1] ? [node[1]] : [];
+    case 'PRINT':
     case 'RETURN':
       return node[1] ? [node[1]] : [];
     default:

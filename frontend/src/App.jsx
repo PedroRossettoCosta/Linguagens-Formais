@@ -21,7 +21,7 @@ Vazium Inferna() {
     }
 }`);
 
-  const [resultado, setResultado] = useState({ cpp: '', ast: null, tokens: '' });
+  const [resultado, setResultado] = useState({ cpp: '', ast: null, tokens: '', logs: [] });
   const [status, setStatus] = useState('Aguardando Ritual');
   const [statusColor, setStatusColor] = useState('gray');
 
@@ -58,13 +58,13 @@ Vazium Inferna() {
         setResultado({
           cpp: data.cpp,
           ast: data.ast,
-          tokens: data.tokens.join('\n')
+          tokens: data.tokens.join('\n'),
+          logs: data.logs || []
         });
       } else {
-        // NOVO: Processamento de Erros Inteligente
         setStatus('Erro no Ritual');
         setStatusColor('#ff3c00');
-        setResultado({ cpp: '', ast: null, tokens: '' });
+        setResultado({ cpp: '', ast: null, tokens: '', logs: [] });
 
         if (data.erros && monacoRef.current) {
           const markers = data.erros.map((err) => ({
@@ -147,6 +147,33 @@ Vazium Inferna() {
         <Panel title="Código C++ Gerado (Arduino)" textColor="text-abyss-blue">
           <pre>{resultado.cpp}</pre>
         </Panel>
+        <div className="lg:col-span-2 h-64">
+          <Panel title="Terminal de Revelação (Simulador Mágico)" textColor="text-gray-300">
+            <div className="bg-[#0a0a0a] h-full w-full p-4 font-mono text-sm overflow-auto border border-gray-900 rounded shadow-inner">
+              {resultado.logs && resultado.logs.length > 0 ? (
+                resultado.logs.map((log, index) => {
+                  // Mágica de Cores: Pintamos as linhas dependendo de quem "falou"
+                  let cor = "text-gray-400";
+                  if (log.includes("[SISTEMA]")) cor = "text-blue-400 font-bold";
+                  if (log.includes("[HARDWARE]")) cor = "text-yellow-500";
+                  if (log.includes("[REVELAÇÃO]")) cor = "text-green-400 text-base";
+                  if (log.includes("[TEMPO]")) cor = "text-purple-400 italic";
+
+                  return (
+                    <div key={index} className={`mb-1 ${cor} tracking-wide`}>
+                      <span className="opacity-50 mr-2">{">"}</span>
+                      {log}
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-gray-600 italic animate-pulse">
+                  O terminal aguarda a invocação do ritual...
+                </div>
+              )}
+            </div>
+          </Panel>
+        </div>
 
         {/* ... (os outros dois painéis de AST e Tokens continuam aqui embaixo igual) ... */}
         <Panel title="Árvore Sintática Abstrata (AST)" textColor="text-gray-300">
