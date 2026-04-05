@@ -13,31 +13,56 @@ body {
 ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 
-/* Adicione isso no final do seu index.css */
+/* ==================================================
+   Animação 1: A Névoa do Abismo (Canalização Densa)
+   ================================================== */
 
-/* Animação 1: O tremor de canalização da magia */
-@keyframes canalizacao {
-  0% { transform: translate(1px, 1px) rotate(0deg); }
-  10% { transform: translate(-1px, -2px) rotate(-1deg); }
-  20% { transform: translate(-3px, 0px) rotate(1deg); }
-  30% { transform: translate(3px, 2px) rotate(0deg); }
-  40% { transform: translate(1px, -1px) rotate(1deg); }
-  50% { transform: translate(-1px, 2px) rotate(-1deg); }
-  60% { transform: translate(-3px, 1px) rotate(0deg); }
-  70% { transform: translate(3px, 1px) rotate(-1deg); }
-  80% { transform: translate(-1px, -1px) rotate(1deg); }
-  90% { transform: translate(1px, 2px) rotate(0deg); }
-  100% { transform: translate(1px, -2px) rotate(-1deg); }
+@keyframes nevoa-abissal {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+    filter: blur(50px) brightness(0.5);
+  }
+  50% {
+    opacity: 1; /* Pico da magia */
+    transform: scale(1);
+    filter: blur(30px) brightness(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.05);
+    filter: blur(50px) brightness(0.5);
+  }
 }
 
-/* Classe que aplica o tremor e um brilho vermelho nas bordas da tela */
 .ritual-ativo {
-  animation: canalizacao 0.4s infinite;
-  box-shadow: inset 0 0 150px rgba(255, 60, 0, 0.15);
-  transition: box-shadow 0.3s ease;
+  box-shadow: inset 0 0 250px rgba(255, 60, 0, 0.4);
+  transition: all 0.5s ease;
+  filter: brightness(0.7) contrast(1.1);
+  pointer-events: none;
 }
 
-/* Animação 2: O Desvanecer do Splash Screen */
+.ritual-ativo::after {
+  content: "";
+  position: fixed; 
+  top: -20%;
+  left: -20%;
+  width: 140%;
+  height: 140%;
+  z-index: 100; 
+  
+  background: 
+    radial-gradient(circle at 15% 50%, rgba(255, 60, 0, 0.25) 0%, transparent 40%),
+    radial-gradient(circle at 85% 50%, rgba(167, 139, 250, 0.25) 0%, transparent 40%),
+    radial-gradient(circle at 50% 100%, rgba(255, 0, 0, 0.15) 0%, transparent 60%);
+  
+  /* Fake Delay no React (1.8s) */
+  animation: nevoa-abissal 1.8s ease-in-out forwards;
+}
+
+/* ==================================================
+   Animação 2: O Desvanecer do Splash Screen
+   ================================================== */
 @keyframes desvanecer-abismo {
   0% { opacity: 1; filter: blur(0px); }
   100% { opacity: 0; filter: blur(20px); visibility: hidden; }
@@ -47,7 +72,6 @@ body {
   animation: desvanecer-abismo 1.5s ease-in-out forwards;
 }
 
-/* Pulso sinistro para o texto da introdução */
 @keyframes pulso-sinistro {
   0%, 100% { opacity: 1; text-shadow: 0 0 20px #ff3c00, 0 0 40px #ff3c00; }
   50% { opacity: 0.5; text-shadow: 0 0 5px #ff3c00; }

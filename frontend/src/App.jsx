@@ -5,7 +5,6 @@ import ASTGraph from './components/ASTGraph';
 import Editor from '@monaco-editor/react';
 
 function App() {
-  // NOVO: Estado para controlar a tela de introdução
   const [despertando, setDespertando] = useState(true);
   const [esconderIntro, setEsconderIntro] = useState(false);
 
@@ -35,11 +34,9 @@ Vazium Inferna() {
   const editorRef = useRef(null);
   const monacoRef = useRef(null);
 
-  // NOVO: Efeito que roda ao abrir a página. Espera 2.5s e remove a introdução.
   useEffect(() => {
     const timerIntro = setTimeout(() => {
       setDespertando(false);
-      // Remove o elemento do DOM completamente após a animação de desvanecer terminar
       setTimeout(() => setEsconderIntro(true), 1500); 
     }, 2500);
     return () => clearTimeout(timerIntro);
@@ -50,31 +47,33 @@ Vazium Inferna() {
     monacoRef.current = monaco;
   }
 
-  const compilarRitual = async () => {
-    setStatus('Compilando...');
-    setStatusColor('yellow');
+const compilarRitual = async () => {
+    setStatus('Canalizando Ritual...');
+    setStatusColor('#a78bfa');
     
     if (monacoRef.current && editorRef.current) {
       monacoRef.current.editor.setModelMarkers(editorRef.current.getModel(), 'abyssus', []);
     }
 
     try {
-      const response = await fetch('http://localhost:5000/compile', {
+      const tempoDeInvocacao = new Promise(resolve => setTimeout(resolve, 1800));
+      const requisicaoPython = fetch('http://localhost:5000/compile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: codigo })
       });
 
+      const [response] = await Promise.all([requisicaoPython, tempoDeInvocacao]);
       const data = await response.json();
 
       if (data.status === 'success') {
-        setStatus('Sucesso!');
+        setStatus('Ritual Concluído!');
         setStatusColor('#32ff7e');
         setResultado({
           cpp: data.cpp,
           ast: data.ast,
           tokens: data.tokens.join('\n'),
-          logs: data.logs || []
+          logs: data.logs || [] 
         });
       } else {
         setStatus('Erro no Ritual');
@@ -90,12 +89,11 @@ Vazium Inferna() {
             message: err.mensagem,
             severity: monacoRef.current.MarkerSeverity.Error
           }));
-          
           monacoRef.current.editor.setModelMarkers(editorRef.current.getModel(), 'abyssus', markers);
         }
       }
     } catch (error) {
-      setStatus('Servidor Caído');
+      setStatus('Conexão Perdida');
       setStatusColor('#ff3c00');
     }
   };
@@ -118,10 +116,7 @@ Vazium Inferna() {
     };
 
   return (
-    // NOVO: A classe 'ritual-ativo' é aplicada dinamicamente quando está compilando!
-    <div className={`min-h-screen p-5 font-mono flex flex-col bg-[#0f0f0f] text-gray-200 ${status === 'Compilando...' ? 'ritual-ativo' : 'transition-all duration-700'}`}>
-      
-      {/* NOVO: A Splash Screen (Tela de Introdução) */}
+    <div className={`min-h-screen p-5 font-mono flex flex-col bg-[#0f0f0f] text-gray-200 ${status === 'Canalizando Ritual...' ? 'ritual-ativo' : 'transition-all duration-700'}`}>
       {!esconderIntro && (
         <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#050505] ${!despertando ? 'intro-desaparecendo' : ''}`}>
           <h1 className="text-abyss-accent text-5xl md:text-7xl font-bold tracking-widest texto-sinistro uppercase text-center">
@@ -133,7 +128,6 @@ Vazium Inferna() {
         </div>
       )}
 
-      {/* O resto da sua aplicação continua intacto abaixo! */}
       <Header status={status} statusColor={statusColor} />
 
       <div className="flex gap-4 mb-5 z-10">
