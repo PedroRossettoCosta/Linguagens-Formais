@@ -27,7 +27,7 @@ Vazium Inferna() {
     }
 }`);
 
-  const [resultado, setResultado] = useState({ cpp: '', ast: null, tokens: '', logs: [] });
+  const [resultado, setResultado] = useState({ cpp: '', ast: null, tokens: [], logs: [] });
   const [status, setStatus] = useState('Aguardando Ritual');
   const [statusColor, setStatusColor] = useState('gray');
 
@@ -72,13 +72,13 @@ const compilarRitual = async () => {
         setResultado({
           cpp: data.cpp,
           ast: data.ast,
-          tokens: data.tokens.join('\n'),
+          tokens: data.tokens || [],
           logs: data.logs || [] 
         });
       } else {
         setStatus('Erro no Ritual');
         setStatusColor('#ff3c00');
-        setResultado({ cpp: '', ast: null, tokens: '', logs: [] });
+        setResultado({ cpp: '', ast: null, tokens: [], logs: [] });
 
         if (data.erros && monacoRef.current) {
           const markers = data.erros.map((err) => ({
@@ -202,8 +202,36 @@ const compilarRitual = async () => {
           <ASTGraph ast={resultado.ast} />
         </Panel>
 
-        <Panel title="Tabela de Tokens (Léxico)" textColor="text-orange-400 text-xs">
-          <pre>{resultado.tokens}</pre>
+        <Panel title="Inspetor de Tokens (Léxico)" textColor="text-orange-400">
+          {resultado.tokens && resultado.tokens.length > 0 ? (
+            <div className="overflow-auto h-full pr-2">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="sticky top-0 bg-[#0a0a0a] z-10">
+                  <tr className="border-b border-gray-800 text-gray-500 uppercase tracking-wider">
+                    <th className="py-2 px-2 font-medium">Linha</th>
+                    <th className="py-2 px-2 font-medium">Tipo (Token)</th>
+                    <th className="py-2 px-2 font-medium">Valor Lido</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {resultado.tokens.map((token, idx) => (
+                    <tr 
+                      key={idx} 
+                      className="border-b border-gray-800/40 hover:bg-gray-800/40 transition-colors duration-150"
+                    >
+                      <td className="py-2 px-2 text-gray-600 font-mono">{token.linha}</td>
+                      <td className="py-2 px-2 text-orange-400 font-semibold tracking-wide">{token.tipo}</td>
+                      <td className="py-2 px-2 text-gray-300 font-mono">{token.valor}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-full text-gray-600 italic text-sm animate-pulse">
+              Aguardando o desmembramento do ritual...
+            </div>
+          )}
         </Panel>
       </div>
     </div>

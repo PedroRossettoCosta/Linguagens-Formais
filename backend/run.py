@@ -64,7 +64,7 @@ def compile_ritual():
                 "status": "success",
                 "ast": ast,
                 "cpp": cpp_output,
-                "tokens": [str(t) for t in tokens],
+                "tokens": [{"tipo": t.type, "valor": str(t.value), "linha": t.lineno} for t in tokens],
                 "logs": logs_execucao # <--- Enviando para o Frontend
             })
     except Exception as e:
