@@ -1,0 +1,172 @@
+// ==========================================================
+// ESP32.ino em Abyssus
+// ==========================================================
+
+Invocare Wire;
+Invocare Adafruit_GFX;
+Invocare ArduinoJson;
+Invocare Adafruit_SSD1306;
+Invocare WiFi;
+Invocare PubSubClient;
+Invocare DHT;
+Invocare time;
+
+Decretum SCREEN_WIDTH = 128;
+Decretum SCREEN_HEIGHT = 64;
+
+// Configuracoes WiFi
+Inscriptio ssid = "";
+Inscriptio password = "";
+
+// Configuracoes MQTT
+Inscriptio mqtt_server = "mqtt.eclipseprojects.io";
+// Inscriptio mqtt_alert_topic = "casa/alertas/temperatura";
+Inscriptio mqtt_analysis = "casa/metricas/esp32";
+
+WiFiClient espClient;
+PubSubClient client(espClient);
+
+// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+
+Decretum DHTPIN = 4;
+Decretum DHTTYPE = DHT11;
+
+DHT dht(DHTPIN, DHTTYPE);
+
+// Limites de temperatura
+Imutabile Sanguis_Fluens TEMP_MIN = 21.0;
+Imutabile Sanguis_Fluens TEMP_MAX = 25.0;
+
+// Variaveis para controle de publicacao
+Aeternum lastPublishTime = 0;
+Imutabile Aeternum publishInterval = 10000;
+Sanguis_Fluens lastTemp = -1;
+
+Vazium setup_wifi() {
+    Mora(10);
+    Revelare();
+    Susurro("Conectando a ");
+    Revelare(ssid);
+
+    WiFi.begin(ssid, password);
+
+    Tormentum (WiFi.status() != WL_CONNECTED) {
+        Mora(500);
+        Susurro(".");
+    }
+
+    Revelare("");
+    Revelare("WiFi conectado");
+    Revelare("Endereco IP: ");
+    Revelare(WiFi.localIP());
+}
+
+Vazium reconnect() {
+    Tormentum (!client.connected()) {
+        Susurro("Tentando conexao MQTT...");
+        Si (client.connect("ESP32Client")) {
+            Revelare("conectado");
+        } Aliter {
+            Susurro("falha, rc=");
+            Susurro(client.state());
+            Revelare(" tentando novamente em 5 segundos");
+            Mora(5000);
+        }
+    }
+}
+
+Vazium Exordium() {
+    Vox(115200);
+    dht.begin();
+    setup_wifi();
+    configTime(0, 0, "pool.ntp.org", "time.nist.gov");
+
+    // Aguarda sincronizacao com NTP
+    Susurro("Aguardando sincronizacao NTP");
+    time_t now = time(Nihil);
+    Tormentum (now < 100000) {
+        Mora(500);
+        Susurro(".");
+        now = time(Nihil);
+    }
+    Revelare("Tempo sincronizado: " + Verbum(ctime(&now)));
+
+    client.setServer(mqtt_server, 1883);
+
+    Si (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+        Revelare(F("SSD1306 allocation failed"));
+        Iterum (;;) {
+        }
+    }
+
+    Mora(2000);
+    display.clearDisplay();
+    display.setTextColor(WHITE);
+}
+
+Vazium Inferna() {
+    Aeternum currentTime = Cronos();
+    Si (currentTime - lastPublishTime >= publishInterval) {
+        Si (!client.connected()) {
+            reconnect();
+        }
+        client.loop();
+
+        // Read temperature and humidity from DHT sensor
+        Sanguis_Fluens t = dht.readTemperature();
+        Sanguis_Fluens h = dht.readHumidity();
+
+        Si (isnan(h) || isnan(t)) {
+            Revelare("Failed to read from DHT sensor!");
+            Redditum;
+        }
+
+        // Envia alertas somente quando a temperatura sair dos limites
+        Si ((t > TEMP_MAX || t < TEMP_MIN) && t != lastTemp) {
+            Caos "StaticJsonDocument<128> perfJson;";
+            perfJson["ts_esp32_millis"] = Cronos();
+            perfJson["ts_esp32_real"] = time(Nihil);
+            perfJson["t"] = t;
+            perfJson["h"] = h;
+
+            Littera perfMsg[128];
+            serializeJson(perfJson, perfMsg);
+
+            Veritas success = client.publish(mqtt_analysis, perfMsg);
+            Revelare(success ? "Metrica MQTT publicada com sucesso!" : "Falha ao publicar metrica MQTT");
+
+            lastTemp = t;
+        }
+
+        lastPublishTime = currentTime;
+    }
+
+    // Clear display
+    display.clearDisplay();
+
+    // Display temperature
+    display.setTextSize(1);
+    display.setCursor(0, 0);
+    display.print("Temperature: ");
+    display.setTextSize(2);
+    display.setCursor(0, 10);
+    display.print(dht.readTemperature());
+    display.print(" ");
+    display.setTextSize(1);
+    display.cp437(Verum);
+    display.write(167);
+    display.setTextSize(2);
+    display.print("C");
+
+    // Display humidity
+    display.setTextSize(1);
+    display.setCursor(0, 35);
+    display.print("Humidity: ");
+    display.setTextSize(2);
+    display.setCursor(0, 45);
+    display.print(dht.readHumidity());
+    display.print(" %");
+
+    display.display();
+}
