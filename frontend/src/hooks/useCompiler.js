@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { DEFAULT_RITUAL_CODE } from '@/constants/ritualTemplates';
 import { compileRitual } from '@/services/compilerService';
 
@@ -52,6 +52,27 @@ export function useCompiler() {
       monacoRef.current.editor.setModelMarkers(editorRef.current.getModel(), 'abyssus', markers);
     }
   };
+
+  // Validação em tempo real (Debounce de 700ms)
+  useEffect(() => {
+    if (!editorRef.current || !monacoRef.current) return;
+
+    const timer = setTimeout(async () => {
+      try {
+        await compileRitual(codigo);
+        // Se compilou com sucesso na validação silenciosa: limpa qualquer marcador vermelho!
+        cleanMarkers();
+      } catch (err) {
+        if (err.status === 'error') {
+          // Se deu erro, aplica marcadores vermelhos em tempo real!
+          cleanMarkers();
+          applyErrorMarkers(err.erros);
+        }
+      }
+    }, 700);
+
+    return () => clearTimeout(timer);
+  }, [codigo]);
 
   const compilar = async () => {
     setStatus('Canalizando Ritual...');

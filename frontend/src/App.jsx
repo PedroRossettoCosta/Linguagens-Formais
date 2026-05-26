@@ -2,7 +2,6 @@ import { useIntro } from '@/hooks/useIntro';
 import { useCompiler } from '@/hooks/useCompiler';
 import Header from '@/components/layout/Header';
 import Panel from '@/components/ui/Panel';
-import ModalFullscreen from '@/components/ui/ModalFullscreen';
 import ErrorToast from '@/components/ui/ErrorToast';
 import ASTGraph from '@/features/compiler/components/ASTGraph';
 import CodeEditor from '@/features/compiler/components/CodeEditor';
@@ -43,14 +42,20 @@ function App() {
 
       <div className="flex gap-4 mb-5">
         <button
-          onClick={compilar}
+          onClick={(e) => {
+            e.currentTarget.blur();
+            compilar();
+          }}
           className="bg-abyss-accent hover:bg-abyss-accent-hover text-white font-bold py-3 px-6 uppercase tracking-widest transition-all duration-300 shadow-[0_0_10px_#ff3c00] hover:shadow-[0_0_25px_#ff3c00]"
         >
           Executar
         </button>
 
         <button
-          onClick={baixarArquivoIoT}
+          onClick={(e) => {
+            e.currentTarget.blur();
+            baixarArquivoIoT();
+          }}
           disabled={!resultado.cpp || resultado.cpp.startsWith('Erro')}
           className="bg-abyss-panel border border-abyss-accent text-abyss-accent hover:bg-gray-900 hover:text-white font-bold py-3 px-6 uppercase tracking-widest transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -58,13 +63,18 @@ function App() {
         </button>
       </div>
 
-      <div className="flex-1 flex flex-col gap-4 overflow-hidden">
-        {/* Editor - Seção Expansível */}
-        <div className="flex-none h-96">
+      <div className="flex-1 flex flex-col gap-4 overflow-hidden relative">
+        {/* Editor - Seção Expansível In-Place */}
+        <div className={`transition-all duration-300 ${
+          modalState.editorFullscreen 
+            ? 'fixed inset-6 z-50 m-0 shadow-[0_0_60px_rgba(255,60,0,0.6)] border border-abyss-accent bg-abyss-panel rounded-lg' 
+            : 'flex-none h-96'
+        }`}>
           <Panel
-            title="Código Fonte Sobrenatural (.ld)"
+            title={modalState.editorFullscreen ? "Código Fonte Sobrenatural (.ld) - Tela Cheia" : "Código Fonte Sobrenatural (.ld)"}
             textColor="text-abyss-green"
-            onMaximize={() => setModalOpen('editorFullscreen', true)}
+            onMaximize={() => setModalOpen('editorFullscreen', !modalState.editorFullscreen)}
+            isMaximized={modalState.editorFullscreen}
           >
             <div className="w-full h-full">
               <CodeEditor
@@ -76,22 +86,28 @@ function App() {
           </Panel>
         </div>
 
-        {/* Grid 2x2 - Previews */}
+        {/* Grid 2x2 - Previews com Expansões In-Place */}
         <div className="grid grid-cols-2 gap-4 flex-1 min-h-0 overflow-hidden">
+          
           {/* C++ Preview */}
-          <div className="min-h-0">
+          <div className={`min-h-0 transition-all duration-300 ${
+            modalState.cppFullscreen 
+              ? 'fixed inset-6 z-50 m-0 shadow-[0_0_60px_rgba(255,60,0,0.6)] border border-abyss-accent bg-abyss-panel rounded-lg' 
+              : ''
+          }`}>
             <Panel
-              title="Código C++ (Arduino) - Preview"
+              title={modalState.cppFullscreen ? "Código C++ Gerado (Arduino) - Tela Cheia" : "Código C++ (Arduino) - Preview"}
               textColor="text-abyss-blue"
-              onMaximize={() => setModalOpen('cppFullscreen', true)}
+              onMaximize={() => setModalOpen('cppFullscreen', !modalState.cppFullscreen)}
+              isMaximized={modalState.cppFullscreen}
             >
-              <pre className="text-xs overflow-auto h-full whitespace-pre-wrap break-words p-2">
+              <pre className="text-xs overflow-auto h-full whitespace-pre-wrap break-words p-2 font-mono">
                 {resultado.cpp || 'Aguardando compilação...'}
               </pre>
             </Panel>
           </div>
 
-          {/* Terminal Preview */}
+          {/* Terminal Preview (Apenas Apresentação Fictícia no Simulador) */}
           <div className="min-h-0">
             <Panel
               title="Terminal de Revelação (Simulador) - Preview"
@@ -120,22 +136,32 @@ function App() {
           </div>
 
           {/* AST Preview */}
-          <div className="min-h-0">
+          <div className={`min-h-0 transition-all duration-300 ${
+            modalState.astFullscreen 
+              ? 'fixed inset-6 z-50 m-0 shadow-[0_0_60px_rgba(255,60,0,0.6)] border border-abyss-accent bg-abyss-panel rounded-lg' 
+              : ''
+          }`}>
             <Panel
-              title="Árvore Sintática (AST) - Preview"
+              title={modalState.astFullscreen ? "Árvore Sintática Abstrata (AST) - Tela Cheia" : "Árvore Sintática (AST) - Preview"}
               textColor="text-gray-300"
-              onMaximize={() => setModalOpen('astFullscreen', true)}
+              onMaximize={() => setModalOpen('astFullscreen', !modalState.astFullscreen)}
+              isMaximized={modalState.astFullscreen}
             >
               <ASTGraph key={resultado.ast ? JSON.stringify(resultado.ast).length : 'empty'} ast={resultado.ast} />
             </Panel>
           </div>
 
           {/* Tokens Preview */}
-          <div className="min-h-0">
+          <div className={`min-h-0 transition-all duration-300 ${
+            modalState.tokensFullscreen 
+              ? 'fixed inset-6 z-50 m-0 shadow-[0_0_60px_rgba(255,60,0,0.6)] border border-abyss-accent bg-abyss-panel rounded-lg' 
+              : ''
+          }`}>
             <Panel
-              title="Tokens (Léxico) - Preview"
+              title={modalState.tokensFullscreen ? "Inspetor de Tokens (Léxico) - Tela Cheia" : "Tokens (Léxico) - Preview"}
               textColor="text-orange-400"
-              onMaximize={() => setModalOpen('tokensFullscreen', true)}
+              onMaximize={() => setModalOpen('tokensFullscreen', !modalState.tokensFullscreen)}
+              isMaximized={modalState.tokensFullscreen}
             >
               {resultado.tokens && resultado.tokens.length > 0 ? (
                 <div className="overflow-auto h-full">
@@ -148,7 +174,7 @@ function App() {
                       </tr>
                     </thead>
                     <tbody>
-                      {resultado.tokens.slice(0, 10).map((token, idx) => (
+                      {(modalState.tokensFullscreen ? resultado.tokens : resultado.tokens.slice(0, 10)).map((token, idx) => (
                         <tr key={idx} className="border-b border-gray-800/40 hover:bg-gray-800/40">
                           <td className="py-1 px-1 text-gray-600 font-mono">{token.linha}</td>
                           <td className="py-1 px-1 text-orange-400 font-semibold">{token.tipo}</td>
@@ -157,7 +183,7 @@ function App() {
                       ))}
                     </tbody>
                   </table>
-                  {resultado.tokens.length > 10 && (
+                  {!modalState.tokensFullscreen && resultado.tokens.length > 10 && (
                     <div className="text-xs text-gray-500 p-1 italic bg-[#0a0a0a]">
                       +{resultado.tokens.length - 10} tokens (fullscreen)
                     </div>
@@ -170,81 +196,9 @@ function App() {
               )}
             </Panel>
           </div>
+
         </div>
       </div>
-
-      {/* Modais Fullscreen */}
-      <ModalFullscreen
-        isOpen={modalState.editorFullscreen}
-        onClose={() => setModalOpen('editorFullscreen', false)}
-        title="Código Fonte Sobrenatural (.ld) - Fullscreen"
-      >
-        <div className="w-full h-full">
-          <CodeEditor
-            codigo={codigo}
-            setCodigo={setCodigo}
-            onEditorMount={handleEditorMount}
-          />
-        </div>
-      </ModalFullscreen>
-
-      <ModalFullscreen
-        isOpen={modalState.cppFullscreen}
-        onClose={() => setModalOpen('cppFullscreen', false)}
-        title="Código C++ Gerado (Arduino) - Fullscreen"
-      >
-        <div className="w-full h-full overflow-auto bg-[#0a0a0a] rounded">
-          <pre className="text-sm font-mono whitespace-pre-wrap break-words p-4 text-gray-300">
-            {resultado.cpp || 'Nenhum código gerado ainda...'}
-          </pre>
-        </div>
-      </ModalFullscreen>
-
-      <ModalFullscreen
-        isOpen={modalState.astFullscreen}
-        onClose={() => setModalOpen('astFullscreen', false)}
-        title="Árvore Sintática Abstrata (AST) - Fullscreen"
-      >
-        <div style={{ width: '100%', height: '100%' }}>
-          <ASTGraph key={resultado.ast ? JSON.stringify(resultado.ast).length : 'empty'} ast={resultado.ast} />
-        </div>
-      </ModalFullscreen>
-
-      <ModalFullscreen
-        isOpen={modalState.tokensFullscreen}
-        onClose={() => setModalOpen('tokensFullscreen', false)}
-        title="Inspetor de Tokens (Léxico) - Fullscreen"
-      >
-        {resultado.tokens && resultado.tokens.length > 0 ? (
-          <div className="overflow-auto w-full h-full">
-            <table className="w-full text-left text-sm border-collapse">
-              <thead className="sticky top-0 bg-[#0a0a0a] z-10">
-                <tr className="border-b border-gray-800 text-gray-500 uppercase tracking-wider">
-                  <th className="py-2 px-3 font-medium">Linha</th>
-                  <th className="py-2 px-3 font-medium">Tipo (Token)</th>
-                  <th className="py-2 px-3 font-medium">Valor Lido</th>
-                </tr>
-              </thead>
-              <tbody>
-                {resultado.tokens.map((token, idx) => (
-                  <tr
-                    key={idx}
-                    className="border-b border-gray-800/40 hover:bg-gray-800/40 transition-colors duration-150"
-                  >
-                    <td className="py-2 px-3 text-gray-600 font-mono">{token.linha}</td>
-                    <td className="py-2 px-3 text-orange-400 font-semibold tracking-wide">{token.tipo}</td>
-                    <td className="py-2 px-3 text-gray-300 font-mono">{token.valor}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="flex items-center justify-center w-full h-full text-gray-600 italic">
-            Aguardando tokens...
-          </div>
-        )}
-      </ModalFullscreen>
 
       <ErrorToast
         erro={erroAtual}
