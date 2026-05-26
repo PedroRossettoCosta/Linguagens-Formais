@@ -4,7 +4,7 @@ import { compileRitual } from '@/services/compilerService';
 
 export function useCompiler() {
   const [codigo, setCodigo] = useState(DEFAULT_RITUAL_CODE);
-  const [resultado, setResultado] = useState({ cpp: '', ast: null, tokens: [], logs: [] });
+  const [resultado, setResultado] = useState({ cpp: '', ast: null, graphAst: null, tokens: [], logs: [] });
   const [status, setStatus] = useState('Aguardando Ritual');
   const [statusColor, setStatusColor] = useState('gray');
   const [erroAtual, setErroAtual] = useState(null);
@@ -53,7 +53,7 @@ export function useCompiler() {
     }
   };
 
-  // Validação em tempo real (Debounce de 700ms)
+  // Validação em tempo real (Debounce de 1000ms)
   useEffect(() => {
     if (!editorRef.current || !monacoRef.current) return;
 
@@ -69,7 +69,7 @@ export function useCompiler() {
           applyErrorMarkers(err.erros);
         }
       }
-    }, 700);
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, [codigo]);
@@ -92,6 +92,7 @@ export function useCompiler() {
       setResultado({
         cpp: data.cpp,
         ast: data.ast,
+        graphAst: data.graph_ast,
         tokens: data.tokens || [],
         logs: data.logs || []
       });
@@ -99,7 +100,7 @@ export function useCompiler() {
       if (err.status === 'error') {
         setStatus('Erro no Ritual');
         setStatusColor('#ff3c00');
-        setResultado({ cpp: '', ast: null, tokens: [], logs: [] });
+        setResultado({ cpp: '', ast: null, graphAst: null, tokens: [], logs: [] });
 
         const primeiroErro = err.erros[0];
         setErroAtual(primeiroErro.mensagem);

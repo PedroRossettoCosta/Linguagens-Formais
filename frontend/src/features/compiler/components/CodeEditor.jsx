@@ -1,22 +1,27 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 
 export default function CodeEditor({ codigo, setCodigo, onEditorMount }) {
   const editorRef = useRef(null);
   const monacoRef = useRef(null);
-  const isInitialMount = useRef(true);
+  const lastValueRef = useRef(codigo);
+  const providerRef = useRef(null);
 
   const handleEditorMount = useCallback((editor, monaco) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
 
-    // Inicializar com o código padrão apenas na primeira montagem
-    if (isInitialMount.current) {
-      editor.setValue(codigo);
-      isInitialMount.current = false;
+    // Inicializar o valor na primeira montagem
+    editor.setValue(codigo);
+    lastValueRef.current = codigo;
 
-      // Registrar provedor de autocompletar para a linguagem do compilador
-      monaco.languages.registerCompletionItemProvider('c', {
+    // Limpar provedor anterior se existir nesta ref para evitar duplicidade
+    if (providerRef.current) {
+      providerRef.current.dispose();
+    }
+
+    // Registrar provedor de autocompletar para a linguagem do compilador
+    providerRef.current = monaco.languages.registerCompletionItemProvider('c', {
         provideCompletionItems: (model, position) => {
           const word = model.getWordUntilPosition(position);
           const range = {
@@ -66,25 +71,53 @@ export default function CodeEditor({ codigo, setCodigo, onEditorMount }) {
             // Diretivas de pré-processador
             { label: 'Invocare', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'Invocare ', detail: 'Inclui biblioteca (Invocare / #include)', range },
             { label: 'Decretum', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'Decretum ', detail: 'Declara macro (Decretum / #define)', range },
-            { label: 'Imutabile', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'Imutabile ', detail: 'Declara constante (Imutabile / const)', range }
+            { label: 'Imutabile', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'Imutabile ', detail: 'Declara constante (Imutabile / const)', range },
+
+            // Rituais e constantes para Pureza de Hardware
+            { label: 'TemperareCronos', kind: monaco.languages.CompletionItemKind.Method, insertText: 'TemperareCronos(${1:0}, ${2:0}, "${3:pool.ntp.org}", "${4:time.nist.gov}");', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, detail: 'Sincroniza hora NTP (TemperareCronos / configTime)', range },
+            { label: 'Aevum', kind: monaco.languages.CompletionItemKind.Method, insertText: 'Aevum(${1:Nihil})', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, detail: 'Lê tempo Unix Epoch (Aevum / time)', range },
+            { label: 'VerbumAevum', kind: monaco.languages.CompletionItemKind.Method, insertText: 'VerbumAevum(&${1:agora})', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, detail: 'Converte tempo Unix para texto (VerbumAevum / ctime)', range },
+            { label: 'SignareCaos', kind: monaco.languages.CompletionItemKind.Method, insertText: 'SignareCaos(${1:objetoJson}, ${2:mensagemBuffer});', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, detail: 'Serializa JSON (SignareCaos / serializeJson)', range },
+            { label: 'Inanis', kind: monaco.languages.CompletionItemKind.Method, insertText: 'Inanis(${1:valor})', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, detail: 'Verifica se valor é profano/indefinido (Inanis / isnan)', range },
+            { label: 'Sacratum', kind: monaco.languages.CompletionItemKind.Method, insertText: 'Sacratum("${1:texto}")', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, detail: 'Guarda texto na memória Flash sagrada (Sacratum / F)', range },
+            { label: 'NexusFidelis', kind: monaco.languages.CompletionItemKind.Constant, insertText: 'NexusFidelis', detail: 'Conexão WiFi consagrada com sucesso (NexusFidelis / WL_CONNECTED)', range },
+            { label: 'Albus', kind: monaco.languages.CompletionItemKind.Constant, insertText: 'Albus', detail: 'Cor branca para displays (Albus / WHITE)', range },
+            { label: 'SSD1306_Tensa', kind: monaco.languages.CompletionItemKind.Constant, insertText: 'SSD1306_Tensa', detail: 'Modo de tensão SSD1306 (SSD1306_Tensa / SSD1306_SWITCHCAPVCC)', range }
           ];
 
           return { suggestions };
         }
       });
-    }
 
     // Chamar callback externo
     if (onEditorMount) {
       onEditorMount(editor, monaco);
     }
-  }, [codigo, onEditorMount]);
+  }, [onEditorMount]);
 
   const handleChange = useCallback((value) => {
     if (value !== undefined) {
+      lastValueRef.current = value;
       setCodigo(value);
     }
   }, [setCodigo]);
+
+  // Limpar provedor global ao desmontar o componente para evitar vazamento de memória
+  useEffect(() => {
+    return () => {
+      if (providerRef.current) {
+        providerRef.current.dispose();
+      }
+    };
+  }, []);
+
+  // Sincronizar alterações que vêm de fora do editor (como templates)
+  useEffect(() => {
+    if (editorRef.current && codigo !== lastValueRef.current) {
+      editorRef.current.setValue(codigo);
+      lastValueRef.current = codigo;
+    }
+  }, [codigo]);
 
   return (
     <div
@@ -99,7 +132,6 @@ export default function CodeEditor({ codigo, setCodigo, onEditorMount }) {
         height="100%"
         theme="vs-dark"
         defaultLanguage="c"
-        defaultValue={codigo}
         onChange={handleChange}
         onMount={handleEditorMount}
         options={{
@@ -145,6 +177,7 @@ export default function CodeEditor({ codigo, setCodigo, onEditorMount }) {
           parameterHints: { enabled: true },
           suggestOnTriggerCharacters: true,
           acceptSuggestionOnEnter: 'on',
+          acceptSuggestionOnCommitCharacter: false,
           tabCompletion: 'on',
           wordBasedSuggestions: 'allDocuments',
 

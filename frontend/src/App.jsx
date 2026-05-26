@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useIntro } from '@/hooks/useIntro';
 import { useCompiler } from '@/hooks/useCompiler';
 import Header from '@/components/layout/Header';
@@ -24,6 +25,76 @@ function App() {
     compilar,
     baixarArquivoIoT
   } = useCompiler();
+
+  const cppPanelContent = useMemo(() => (
+    <pre className="text-xs overflow-auto h-full whitespace-pre-wrap break-words p-2 font-mono">
+      {resultado.cpp || 'Aguardando compilação...'}
+    </pre>
+  ), [resultado.cpp]);
+
+  const terminalPanelContent = useMemo(() => {
+    if (!resultado.logs || resultado.logs.length === 0) {
+      return <div className="text-gray-600 italic text-xs">Terminal aguarda compilação...</div>;
+    }
+    return (
+      <div className="bg-[#0a0a0a] h-full w-full p-3 font-mono text-xs overflow-auto border border-gray-900 rounded shadow-inner">
+        {resultado.logs.slice(-12).map((log, index) => {
+          let cor = "text-gray-400";
+          if (log.includes("[SISTEMA]")) cor = "text-blue-400 font-bold";
+          if (log.includes("[HARDWARE]")) cor = "text-yellow-500";
+          if (log.includes("[REVELAÇÃO]")) cor = "text-green-400";
+          if (log.includes("[TEMPO]")) cor = "text-purple-400 italic";
+
+          return (
+            <div key={index} className={`${cor} tracking-wide mb-0.5`}>
+              <span className="opacity-50">{">"}</span> {log}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }, [resultado.logs]);
+
+  const astPanelContent = useMemo(() => (
+    <ASTGraph key={resultado.graphAst ? JSON.stringify(resultado.graphAst).length : 'empty'} ast={resultado.graphAst} />
+  ), [resultado.graphAst]);
+
+  const tokensPanelContent = useMemo(() => {
+    if (!resultado.tokens || resultado.tokens.length === 0) {
+      return (
+        <div className="flex items-center justify-center h-full text-gray-600 italic text-xs">
+          Aguardando tokens...
+        </div>
+      );
+    }
+    return (
+      <div className="overflow-auto h-full">
+        <table className="w-full text-left text-xs border-collapse">
+          <thead className="sticky top-0 bg-[#0a0a0a] z-10">
+            <tr className="border-b border-gray-800 text-gray-500 uppercase">
+              <th className="py-1 px-1 font-medium">L</th>
+              <th className="py-1 px-1 font-medium">Tipo</th>
+              <th className="py-1 px-1 font-medium">Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(modalState.tokensFullscreen ? resultado.tokens : resultado.tokens.slice(0, 10)).map((token, idx) => (
+              <tr key={idx} className="border-b border-gray-800/40 hover:bg-gray-800/40">
+                <td className="py-1 px-1 text-gray-600 font-mono">{token.linha}</td>
+                <td className="py-1 px-1 text-orange-400 font-semibold">{token.tipo}</td>
+                <td className="py-1 px-1 text-gray-300 font-mono truncate">{token.valor}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {!modalState.tokensFullscreen && resultado.tokens.length > 10 && (
+          <div className="text-xs text-gray-500 p-1 italic bg-[#0a0a0a]">
+            +{resultado.tokens.length - 10} tokens (fullscreen)
+          </div>
+        )}
+      </div>
+    );
+  }, [resultado.tokens, modalState.tokensFullscreen]);
 
   return (
     <div className={`min-h-screen p-5 font-mono flex flex-col bg-[#0f0f0f] text-gray-200 ${status === 'Canalizando Ritual...' ? 'ritual-ativo' : 'transition-all duration-700'}`}>
@@ -101,9 +172,7 @@ function App() {
               onMaximize={() => setModalOpen('cppFullscreen', !modalState.cppFullscreen)}
               isMaximized={modalState.cppFullscreen}
             >
-              <pre className="text-xs overflow-auto h-full whitespace-pre-wrap break-words p-2 font-mono">
-                {resultado.cpp || 'Aguardando compilação...'}
-              </pre>
+              {cppPanelContent}
             </Panel>
           </div>
 
@@ -113,25 +182,7 @@ function App() {
               title="Terminal de Revelação (Simulador) - Preview"
               textColor="text-gray-300"
             >
-              <div className="bg-[#0a0a0a] h-full w-full p-3 font-mono text-xs overflow-auto border border-gray-900 rounded shadow-inner">
-                {resultado.logs && resultado.logs.length > 0 ? (
-                  resultado.logs.slice(-12).map((log, index) => {
-                    let cor = "text-gray-400";
-                    if (log.includes("[SISTEMA]")) cor = "text-blue-400 font-bold";
-                    if (log.includes("[HARDWARE]")) cor = "text-yellow-500";
-                    if (log.includes("[REVELAÇÃO]")) cor = "text-green-400";
-                    if (log.includes("[TEMPO]")) cor = "text-purple-400 italic";
-
-                    return (
-                      <div key={index} className={`${cor} tracking-wide mb-0.5`}>
-                        <span className="opacity-50">{">"}</span> {log}
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div className="text-gray-600 italic text-xs">Terminal aguarda compilação...</div>
-                )}
-              </div>
+              {terminalPanelContent}
             </Panel>
           </div>
 
@@ -147,7 +198,7 @@ function App() {
               onMaximize={() => setModalOpen('astFullscreen', !modalState.astFullscreen)}
               isMaximized={modalState.astFullscreen}
             >
-              <ASTGraph key={resultado.ast ? JSON.stringify(resultado.ast).length : 'empty'} ast={resultado.ast} />
+              {astPanelContent}
             </Panel>
           </div>
 
@@ -163,37 +214,7 @@ function App() {
               onMaximize={() => setModalOpen('tokensFullscreen', !modalState.tokensFullscreen)}
               isMaximized={modalState.tokensFullscreen}
             >
-              {resultado.tokens && resultado.tokens.length > 0 ? (
-                <div className="overflow-auto h-full">
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead className="sticky top-0 bg-[#0a0a0a] z-10">
-                      <tr className="border-b border-gray-800 text-gray-500 uppercase">
-                        <th className="py-1 px-1 font-medium">L</th>
-                        <th className="py-1 px-1 font-medium">Tipo</th>
-                        <th className="py-1 px-1 font-medium">Valor</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(modalState.tokensFullscreen ? resultado.tokens : resultado.tokens.slice(0, 10)).map((token, idx) => (
-                        <tr key={idx} className="border-b border-gray-800/40 hover:bg-gray-800/40">
-                          <td className="py-1 px-1 text-gray-600 font-mono">{token.linha}</td>
-                          <td className="py-1 px-1 text-orange-400 font-semibold">{token.tipo}</td>
-                          <td className="py-1 px-1 text-gray-300 font-mono truncate">{token.valor}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  {!modalState.tokensFullscreen && resultado.tokens.length > 10 && (
-                    <div className="text-xs text-gray-500 p-1 italic bg-[#0a0a0a]">
-                      +{resultado.tokens.length - 10} tokens (fullscreen)
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="flex items-center justify-center h-full text-gray-600 italic text-xs">
-                  Aguardando tokens...
-                </div>
-              )}
+              {tokensPanelContent}
             </Panel>
           </div>
 

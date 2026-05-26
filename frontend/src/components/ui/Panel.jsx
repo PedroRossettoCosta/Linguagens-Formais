@@ -7,7 +7,10 @@ export default function Panel({ title, children, textColor = "text-abyss-text", 
         <span>{title}</span>
         {onMaximize && (
           <button
-            onClick={onMaximize}
+            onClick={(e) => {
+              e.currentTarget.blur();
+              onMaximize();
+            }}
             className="text-gray-500 hover:text-abyss-accent transition-colors text-base hover:shadow-[0_0_8px_#ff3c00] font-bold px-1"
             title={isMaximized ? "Recolher Tela" : "Expandir para Tela Cheia"}
           >
