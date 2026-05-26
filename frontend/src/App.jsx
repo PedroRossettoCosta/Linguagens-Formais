@@ -1,142 +1,30 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import Header from './components/Header';
-import Panel from './components/Panel';
-import ASTGraph from './components/ASTGraph';
-import CodeEditor from './components/CodeEditor';
-import ModalFullscreen from './components/ModalFullscreen';
-import ErrorToast from './components/ErrorToast';
+import { useIntro } from '@/hooks/useIntro';
+import { useCompiler } from '@/hooks/useCompiler';
+import Header from '@/components/layout/Header';
+import Panel from '@/components/ui/Panel';
+import ModalFullscreen from '@/components/ui/ModalFullscreen';
+import ErrorToast from '@/components/ui/ErrorToast';
+import ASTGraph from '@/features/compiler/components/ASTGraph';
+import CodeEditor from '@/features/compiler/components/CodeEditor';
 
 function App() {
-  const [despertando, setDespertando] = useState(true);
-  const [esconderIntro, setEsconderIntro] = useState(false);
-
-  const [codigo, setCodigo] = useState(`Sanguis led = 13;
-Sanguis_Fluens pressao = 1.0;
-
-Vazium Exordium() {
-    Revelare("Iniciando a estufa inteligente...");
-    Habitus(led, Ignis);
-}
-
-Vazium Inferna() {
-    pressao = pressao + 0.5;
-
-    Si (pressao > 1.2) {
-        Revelare("Cuidado! Pressao subiu muito!");
-        Incantare(led, Ignis);
-        Mora(1000);
-        Incantare(led, Tenebrae);
-    }
-}`);
-
-  const [resultado, setResultado] = useState({ cpp: '', ast: null, tokens: [], logs: [] });
-  const [status, setStatus] = useState('Aguardando Ritual');
-  const [statusColor, setStatusColor] = useState('gray');
-  const [erroAtual, setErroAtual] = useState(null);
-  const [sugestaoErro, setSugestaoErro] = useState(null);
-
-  const [modalState, setModalState] = useState({
-    editorFullscreen: false,
-    cppFullscreen: false,
-    astFullscreen: false,
-    tokensFullscreen: false,
-  });
-
-  const editorRef = useRef(null);
-  const monacoRef = useRef(null);
-
-  useEffect(() => {
-    const timerIntro = setTimeout(() => {
-      setDespertando(false);
-      setTimeout(() => setEsconderIntro(true), 1500);
-    }, 2500);
-    return () => clearTimeout(timerIntro);
-  }, []);
-
-  const handleEditorMount = useCallback((editor, monaco) => {
-    editorRef.current = editor;
-    monacoRef.current = monaco;
-  }, []);
-
-  const handleCodigo = useCallback((value) => {
-    setCodigo(value || '');
-  }, []);
-
-const compilarRitual = async () => {
-    setStatus('Canalizando Ritual...');
-    setStatusColor('#a78bfa');
-    setErroAtual(null);
-    setSugestaoErro(null);
-
-    if (monacoRef.current && editorRef.current) {
-      monacoRef.current.editor.setModelMarkers(editorRef.current.getModel(), 'abyssus', []);
-    }
-
-    try {
-      const tempoDeInvocacao = new Promise(resolve => setTimeout(resolve, 1800));
-      const requisicaoPython = fetch('http://localhost:5000/compile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: codigo })
-      });
-
-      const [response] = await Promise.all([requisicaoPython, tempoDeInvocacao]);
-      const data = await response.json();
-
-      if (data.status === 'success') {
-        setStatus('Ritual Concluído!');
-        setStatusColor('#32ff7e');
-        setResultado({
-          cpp: data.cpp,
-          ast: data.ast,
-          tokens: data.tokens || [],
-          logs: data.logs || []
-        });
-      } else {
-        setStatus('Erro no Ritual');
-        setStatusColor('#ff3c00');
-        setResultado({ cpp: '', ast: null, tokens: [], logs: [] });
-
-        if (data.erros && data.erros.length > 0) {
-          const primeiroErro = data.erros[0];
-          setErroAtual(primeiroErro.mensagem);
-          setSugestaoErro(primeiroErro.sugestao || null);
-
-          const markers = data.erros.map((err) => ({
-            startLineNumber: err.linha,
-            startColumn: 1,
-            endLineNumber: err.linha,
-            endColumn: 100,
-            message: err.mensagem,
-            severity: monacoRef.current.MarkerSeverity.Error
-          }));
-          monacoRef.current.editor.setModelMarkers(editorRef.current.getModel(), 'abyssus', markers);
-        }
-      }
-    } catch (error) {
-      setStatus('Conexão Perdida');
-      setStatusColor('#ff3c00');
-      setErroAtual('Falha na Conexão com o Backend');
-      setSugestaoErro('Verifique se o servidor Python está rodando em localhost:5000');
-    }
-  };
-
-  const baixarArquivoIoT = () => {
-      if (!resultado.cpp || resultado.cpp.startsWith('Erro')) {
-        alert("⚠️ Você precisa compilar um ritual com sucesso antes de extrair sua essência!");
-        return;
-      }
-      
-      const blob = new Blob([resultado.cpp], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'ritual_sagrado.iot';
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    };
+  const { despertando, esconderIntro } = useIntro();
+  const {
+    codigo,
+    setCodigo,
+    resultado,
+    status,
+    statusColor,
+    erroAtual,
+    setErroAtual,
+    sugestaoErro,
+    setSugestaoErro,
+    modalState,
+    setModalOpen,
+    handleEditorMount,
+    compilar,
+    baixarArquivoIoT
+  } = useCompiler();
 
   return (
     <div className={`min-h-screen p-5 font-mono flex flex-col bg-[#0f0f0f] text-gray-200 ${status === 'Canalizando Ritual...' ? 'ritual-ativo' : 'transition-all duration-700'}`}>
@@ -155,7 +43,7 @@ const compilarRitual = async () => {
 
       <div className="flex gap-4 mb-5">
         <button
-          onClick={compilarRitual}
+          onClick={compilar}
           className="bg-abyss-accent hover:bg-abyss-accent-hover text-white font-bold py-3 px-6 uppercase tracking-widest transition-all duration-300 shadow-[0_0_10px_#ff3c00] hover:shadow-[0_0_25px_#ff3c00]"
         >
           Executar
@@ -176,12 +64,12 @@ const compilarRitual = async () => {
           <Panel
             title="Código Fonte Sobrenatural (.ld)"
             textColor="text-abyss-green"
-            onMaximize={() => setModalState(prev => ({ ...prev, editorFullscreen: true }))}
+            onMaximize={() => setModalOpen('editorFullscreen', true)}
           >
             <div className="w-full h-full">
               <CodeEditor
                 codigo={codigo}
-                setCodigo={handleCodigo}
+                setCodigo={setCodigo}
                 onEditorMount={handleEditorMount}
               />
             </div>
@@ -195,7 +83,7 @@ const compilarRitual = async () => {
             <Panel
               title="Código C++ (Arduino) - Preview"
               textColor="text-abyss-blue"
-              onMaximize={() => setModalState(prev => ({ ...prev, cppFullscreen: true }))}
+              onMaximize={() => setModalOpen('cppFullscreen', true)}
             >
               <pre className="text-xs overflow-auto h-full whitespace-pre-wrap break-words p-2">
                 {resultado.cpp || 'Aguardando compilação...'}
@@ -236,7 +124,7 @@ const compilarRitual = async () => {
             <Panel
               title="Árvore Sintática (AST) - Preview"
               textColor="text-gray-300"
-              onMaximize={() => setModalState(prev => ({ ...prev, astFullscreen: true }))}
+              onMaximize={() => setModalOpen('astFullscreen', true)}
             >
               <ASTGraph key={resultado.ast ? JSON.stringify(resultado.ast).length : 'empty'} ast={resultado.ast} />
             </Panel>
@@ -247,7 +135,7 @@ const compilarRitual = async () => {
             <Panel
               title="Tokens (Léxico) - Preview"
               textColor="text-orange-400"
-              onMaximize={() => setModalState(prev => ({ ...prev, tokensFullscreen: true }))}
+              onMaximize={() => setModalOpen('tokensFullscreen', true)}
             >
               {resultado.tokens && resultado.tokens.length > 0 ? (
                 <div className="overflow-auto h-full">
@@ -285,10 +173,10 @@ const compilarRitual = async () => {
         </div>
       </div>
 
-      {/* Modal: Editor Fullscreen */}
+      {/* Modais Fullscreen */}
       <ModalFullscreen
         isOpen={modalState.editorFullscreen}
-        onClose={() => setModalState(prev => ({ ...prev, editorFullscreen: false }))}
+        onClose={() => setModalOpen('editorFullscreen', false)}
         title="Código Fonte Sobrenatural (.ld) - Fullscreen"
       >
         <div className="w-full h-full">
@@ -300,10 +188,9 @@ const compilarRitual = async () => {
         </div>
       </ModalFullscreen>
 
-      {/* Modal: C++ Fullscreen */}
       <ModalFullscreen
         isOpen={modalState.cppFullscreen}
-        onClose={() => setModalState(prev => ({ ...prev, cppFullscreen: false }))}
+        onClose={() => setModalOpen('cppFullscreen', false)}
         title="Código C++ Gerado (Arduino) - Fullscreen"
       >
         <div className="w-full h-full overflow-auto bg-[#0a0a0a] rounded">
@@ -313,10 +200,9 @@ const compilarRitual = async () => {
         </div>
       </ModalFullscreen>
 
-      {/* Modal: AST Fullscreen */}
       <ModalFullscreen
         isOpen={modalState.astFullscreen}
-        onClose={() => setModalState(prev => ({ ...prev, astFullscreen: false }))}
+        onClose={() => setModalOpen('astFullscreen', false)}
         title="Árvore Sintática Abstrata (AST) - Fullscreen"
       >
         <div style={{ width: '100%', height: '100%' }}>
@@ -324,10 +210,9 @@ const compilarRitual = async () => {
         </div>
       </ModalFullscreen>
 
-      {/* Modal: Tokens Fullscreen */}
       <ModalFullscreen
         isOpen={modalState.tokensFullscreen}
-        onClose={() => setModalState(prev => ({ ...prev, tokensFullscreen: false }))}
+        onClose={() => setModalOpen('tokensFullscreen', false)}
         title="Inspetor de Tokens (Léxico) - Fullscreen"
       >
         {resultado.tokens && resultado.tokens.length > 0 ? (

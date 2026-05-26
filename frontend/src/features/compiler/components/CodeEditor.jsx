@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useCallback } from 'react';
 import Editor from '@monaco-editor/react';
 
 export default function CodeEditor({ codigo, setCodigo, onEditorMount }) {

@@ -1,0 +1,128 @@
+import { useState, useRef, useCallback } from 'react';
+import { DEFAULT_RITUAL_CODE } from '@/constants/ritualTemplates';
+import { compileRitual } from '@/services/compilerService';
+
+export function useCompiler() {
+  const [codigo, setCodigo] = useState(DEFAULT_RITUAL_CODE);
+  const [resultado, setResultado] = useState({ cpp: '', ast: null, tokens: [], logs: [] });
+  const [status, setStatus] = useState('Aguardando Ritual');
+  const [statusColor, setStatusColor] = useState('gray');
+  const [erroAtual, setErroAtual] = useState(null);
+  const [sugestaoErro, setSugestaoErro] = useState(null);
+
+  const [modalState, setModalState] = useState({
+    editorFullscreen: false,
+    cppFullscreen: false,
+    astFullscreen: false,
+    tokensFullscreen: false,
+  });
+
+  const editorRef = useRef(null);
+  const monacoRef = useRef(null);
+
+  const handleEditorMount = useCallback((editor, monaco) => {
+    editorRef.current = editor;
+    monacoRef.current = monaco;
+  }, []);
+
+  const handleCodigo = useCallback((value) => {
+    setCodigo(value || '');
+  }, []);
+
+  const setModalOpen = useCallback((key, isOpen) => {
+    setModalState(prev => ({ ...prev, [key]: isOpen }));
+  }, []);
+
+  const cleanMarkers = () => {
+    if (monacoRef.current && editorRef.current) {
+      monacoRef.current.editor.setModelMarkers(editorRef.current.getModel(), 'abyssus', []);
+    }
+  };
+
+  const applyErrorMarkers = (erros) => {
+    if (monacoRef.current && editorRef.current && erros.length > 0) {
+      const markers = erros.map((err) => ({
+        startLineNumber: err.linha || 1,
+        startColumn: 1,
+        endLineNumber: err.linha || 1,
+        endColumn: 100,
+        message: err.mensagem,
+        severity: monacoRef.current.MarkerSeverity.Error
+      }));
+      monacoRef.current.editor.setModelMarkers(editorRef.current.getModel(), 'abyssus', markers);
+    }
+  };
+
+  const compilar = async () => {
+    setStatus('Canalizando Ritual...');
+    setStatusColor('#a78bfa');
+    setErroAtual(null);
+    setSugestaoErro(null);
+    cleanMarkers();
+
+    try {
+      const tempoMinimoInvocacao = new Promise(resolve => setTimeout(resolve, 1800));
+      const chamadaCompilacao = compileRitual(codigo);
+
+      const [data] = await Promise.all([chamadaCompilacao, tempoMinimoInvocacao]);
+
+      setStatus('Ritual Concluído!');
+      setStatusColor('#32ff7e');
+      setResultado({
+        cpp: data.cpp,
+        ast: data.ast,
+        tokens: data.tokens || [],
+        logs: data.logs || []
+      });
+    } catch (err) {
+      if (err.status === 'error') {
+        setStatus('Erro no Ritual');
+        setStatusColor('#ff3c00');
+        setResultado({ cpp: '', ast: null, tokens: [], logs: [] });
+
+        const primeiroErro = err.erros[0];
+        setErroAtual(primeiroErro.mensagem);
+        setSugestaoErro(primeiroErro.sugestao || null);
+        applyErrorMarkers(err.erros);
+      } else {
+        setStatus('Conexão Perdida');
+        setStatusColor('#ff3c00');
+        setErroAtual('Falha na Conexão com o Backend');
+        setSugestaoErro('Verifique se o servidor Python está rodando em localhost:5000');
+      }
+    }
+  };
+
+  const baixarArquivoIoT = () => {
+    if (!resultado.cpp || resultado.cpp.startsWith('Erro')) {
+      return;
+    }
+    
+    const blob = new Blob([resultado.cpp], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'ritual_sagrado.iot';
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  return {
+    codigo,
+    setCodigo: handleCodigo,
+    resultado,
+    status,
+    statusColor,
+    erroAtual,
+    setErroAtual,
+    sugestaoErro,
+    setSugestaoErro,
+    modalState,
+    setModalOpen,
+    handleEditorMount,
+    compilar,
+    baixarArquivoIoT
+  };
+}
