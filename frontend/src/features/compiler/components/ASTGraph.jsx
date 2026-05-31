@@ -18,131 +18,33 @@ const nodeColors = {
   ASSIGN: '#7efff5',
   IF_STMT: '#ffd700',       // Si
   WHILE_STMT: '#ffd700',    // Tormentum
+  FOR_STMT: '#ffd700',      // Iterum
   BINOP: '#c084fc',
+  LOGOP: '#c084fc',
   FUNC_CALL: '#32ff7e',
   PIN_MODE: '#32ff7e',      // Habitus
   DIGITAL_WRITE: '#32ff7e', // Incantare
   DIGITAL_READ: '#32ff7e',  // Sentire
-  ANALOG_WRITE: '#32ff7e',  // Fluxus
-  ANALOG_READ: '#32ff7e',   // Percipere
+  ANALOG_READ: '#32ff7e',   // Anima
   DELAY: '#32ff7e',         // Mora
-  PRINT: '#a78bfa',         // NOVO: Revelare (Roxo Místico)
+  PRINT: '#a78bfa',         // Revelare (Roxo Místico)
   RETURN: '#f472b6',        // Redditum
   INT_LIT: '#94a3b8',
   FLOAT_LIT: '#94a3b8',
-  STRING_LIT: '#94a3b8',    // NOVO: Textos entre aspas
+  STRING_LIT: '#94a3b8',    // Textos entre aspas
   VAR: '#e0e0e0',
   CONST_STATE: '#fbbf24',   // Ignis / Tenebrae
   CONDITION: '#ffd700',
+  TEMPERARE_CRONOS: '#32ff7e',
+  SIGNARE_CAOS: '#32ff7e',
+  SACRATUM: '#32ff7e',
+  INANIS: '#32ff7e',
+  AEVUM: '#32ff7e',
+  VERBUM_AEVUM: '#32ff7e',
 };
 
 function getNodeColor(type) {
   return nodeColors[type] || '#e0e0e0';
-}
-
-// Mapeamento reverso: nomes genéricos/C++ → nomes da linguagem infernal
-const typeToInfernal = {
-  int: 'Sanguis',
-  float: 'Sanguis_Fluens',
-  HIGH: 'Ignis',
-  LOW: 'Tenebrae',
-};
-
-function getLabel(node) {
-  if (!Array.isArray(node)) return String(node);
-  const type = node[0];
-  switch (type) {
-    case 'PROGRAM':
-      return 'Ritual';
-    case 'SETUP_BLOCK':
-      return 'Exordium()';
-    case 'LOOP_BLOCK':
-      return 'Inferna()';
-    case 'VAR_DECL': {
-      const tipoInfernal = typeToInfernal[node[1]] || node[1];
-      return `${tipoInfernal}\n${node[2]}`;
-    }
-    case 'ASSIGN':
-      return `${node[1]} =`;
-    case 'IF_STMT':
-      return 'Si';
-    case 'WHILE_STMT':
-      return 'Tormentum';
-    case 'BINOP':
-      return `( ${node[1]} )`;
-    case 'FUNC_CALL':
-      return `${node[1]}`;
-    case 'PIN_MODE':
-      return 'Habitus';
-    case 'DIGITAL_WRITE':
-      return 'Incantare';
-    case 'DIGITAL_READ':
-      return 'Sentire';
-    case 'ANALOG_WRITE':
-      return 'Fluxus';
-    case 'ANALOG_READ':
-      return 'Percipere';
-    case 'DELAY':
-      return 'Mora';
-    case 'PRINT':
-      return 'Revelare';
-    case 'RETURN':
-      return 'Redditum';
-    case 'INT_LIT':
-      return `${node[1]}`;
-    case 'FLOAT_LIT':
-      return `${node[1]}`;
-    case 'STRING_LIT':
-      return `"${node[1]}"`;
-    case 'VAR':
-      return `${node[1]}`;
-    case 'CONST_STATE': {
-      const valInfernal = typeToInfernal[node[1]] || node[1];
-      return valInfernal;
-    }
-    case 'CONDITION':
-      return `( ${node[1]} )`;
-    default:
-      return type;
-  }
-}
-
-function getChildren(node) {
-  if (!Array.isArray(node)) return [];
-  const type = node[0];
-  switch (type) {
-    case 'PROGRAM':
-      return Array.isArray(node[1]) ? node[1] : [];
-    case 'SETUP_BLOCK':
-    case 'LOOP_BLOCK':
-      return Array.isArray(node[1]) ? node[1] : [];
-    case 'VAR_DECL':
-      return node[3] ? [node[3]] : [];
-    case 'ASSIGN':
-      return node[2] ? [node[2]] : [];
-    case 'IF_STMT':
-      return [node[1], ...(Array.isArray(node[2]) ? node[2] : [])];
-    case 'WHILE_STMT':
-      return [node[1], ...(Array.isArray(node[2]) ? node[2] : [])];
-    case 'BINOP':
-    case 'CONDITION':
-      return [node[2], node[3]].filter(Boolean);
-    case 'FUNC_CALL':
-      return Array.isArray(node[2]) ? node[2] : [];
-    case 'PIN_MODE':
-    case 'DIGITAL_WRITE':
-    case 'ANALOG_WRITE':
-      return [node[1], node[2]].filter(Boolean);
-    case 'DIGITAL_READ':
-    case 'ANALOG_READ':
-      return node[1] ? [node[1]] : [];
-    case 'DELAY':
-    case 'PRINT':
-    case 'RETURN':
-      return node[1] ? [node[1]] : [];
-    default:
-      return node.slice(1).filter((c) => Array.isArray(c));
-  }
 }
 
 function buildGraph(ast) {
@@ -151,10 +53,10 @@ function buildGraph(ast) {
   let id = 0;
 
   function walk(node, parentId) {
-    if (node == null) return;
+    if (!node) return;
     const currentId = `node-${id++}`;
-    const type = Array.isArray(node) ? node[0] : null;
-    const label = getLabel(node);
+    const type = node.type || 'LITERAL';
+    const label = node.label || '';
     const color = getNodeColor(type);
 
     nodes.push({
@@ -186,7 +88,7 @@ function buildGraph(ast) {
       });
     }
 
-    const children = getChildren(node);
+    const children = node.children || [];
     children.forEach((child) => walk(child, currentId));
   }
 
@@ -256,6 +158,11 @@ export default function ASTGraph({ ast }) {
         fitViewOptions={{ padding: 0.2 }}
         proOptions={{ hideAttribution: true }}
         style={{ background: '#161616' }}
+        panActivationKeyCode={null}
+        deleteKeyCode={null}
+        selectionKeyCode={null}
+        multiSelectionKeyCode={null}
+        zoomActivationKeyCode={null}
       >
         <Background color="#333" gap={20} size={1} />
         <Controls

@@ -1,5 +1,5 @@
 // ==========================================================
-// ESP32.ino em Abyssus
+// ESP32.ino em Abyssus (100% Pureza Mística)
 // ==========================================================
 
 Invocare Wire;
@@ -51,7 +51,7 @@ Vazium setup_wifi() {
 
     WiFi.begin(ssid, password);
 
-    Tormentum (WiFi.status() != WL_CONNECTED) {
+    Tormentum (WiFi.status() != NexusFidelis) {
         Mora(500);
         Susurro(".");
     }
@@ -80,29 +80,29 @@ Vazium Exordium() {
     Vox(115200);
     dht.begin();
     setup_wifi();
-    configTime(0, 0, "pool.ntp.org", "time.nist.gov");
+    TemperareCronos(0, 0, "pool.ntp.org", "time.nist.gov");
 
     // Aguarda sincronizacao com NTP
     Susurro("Aguardando sincronizacao NTP");
-    time_t now = time(Nihil);
+    Aeternum now = Aevum(Nihil);
     Tormentum (now < 100000) {
         Mora(500);
         Susurro(".");
-        now = time(Nihil);
+        now = Aevum(Nihil);
     }
-    Revelare("Tempo sincronizado: " + Verbum(ctime(&now)));
+    Revelare("Tempo sincronizado: " + VerbumAevum(&now));
 
     client.setServer(mqtt_server, 1883);
 
-    Si (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
-        Revelare(F("SSD1306 allocation failed"));
+    Si (!display.begin(SSD1306_Tensa, 0x3C)) {
+        Revelare(Sacratum("SSD1306 allocation failed"));
         Iterum (;;) {
         }
     }
 
     Mora(2000);
     display.clearDisplay();
-    display.setTextColor(WHITE);
+    display.setTextColor(Albus);
 }
 
 Vazium Inferna() {
@@ -117,7 +117,7 @@ Vazium Inferna() {
         Sanguis_Fluens t = dht.readTemperature();
         Sanguis_Fluens h = dht.readHumidity();
 
-        Si (isnan(h) || isnan(t)) {
+        Si (Inanis(h) || Inanis(t)) {
             Revelare("Failed to read from DHT sensor!");
             Redditum;
         }
@@ -126,12 +126,12 @@ Vazium Inferna() {
         Si ((t > TEMP_MAX || t < TEMP_MIN) && t != lastTemp) {
             Caos "StaticJsonDocument<128> perfJson;";
             perfJson["ts_esp32_millis"] = Cronos();
-            perfJson["ts_esp32_real"] = time(Nihil);
+            perfJson["ts_esp32_real"] = Aevum(Nihil);
             perfJson["t"] = t;
             perfJson["h"] = h;
 
             Littera perfMsg[128];
-            serializeJson(perfJson, perfMsg);
+            SignareCaos(perfJson, perfMsg);
 
             Veritas success = client.publish(mqtt_analysis, perfMsg);
             Revelare(success ? "Metrica MQTT publicada com sucesso!" : "Falha ao publicar metrica MQTT");

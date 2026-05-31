@@ -58,52 +58,52 @@ class LDParser(Parser):
     # ==========================================================
     @_('INSCRIPTIO ID EQUALS expr SEMI')
     def statement(self, p):
-        return ('VAR_DECL', 'const char*', p.ID, p.expr)
+        return ('VAR_DECL', 'Inscriptio', p.ID, p.expr)
 
     @_('LITTERA ID LBRACKET NUMBER RBRACKET SEMI')
     def statement(self, p):
-        return ('ARRAY_DECL', 'char', p.ID, p.NUMBER)
+        return ('ARRAY_DECL', 'Littera', p.ID, p.NUMBER)
 
     @_('SANGUIS ID EQUALS expr SEMI')
     def statement(self, p):
-        return ('VAR_DECL', 'int', p.ID, p.expr)
+        return ('VAR_DECL', 'Sanguis', p.ID, p.expr)
 
     @_('SANGUIS_FLUENS ID EQUALS expr SEMI')
     def statement(self, p):
-        return ('VAR_DECL', 'float', p.ID, p.expr)
+        return ('VAR_DECL', 'Sanguis_Fluens', p.ID, p.expr)
 
     @_('VERITAS ID EQUALS expr SEMI')
     def statement(self, p):
-        return ('VAR_DECL', 'bool', p.ID, p.expr)
+        return ('VAR_DECL', 'Veritas', p.ID, p.expr)
 
     @_('AETERNUM ID EQUALS expr SEMI')
     def statement(self, p):
-        return ('VAR_DECL', 'unsigned long', p.ID, p.expr)
+        return ('VAR_DECL', 'Aeternum', p.ID, p.expr)
 
     @_('VERBUM ID EQUALS expr SEMI')
     def statement(self, p):
-        return ('VAR_DECL', 'String', p.ID, p.expr)
+        return ('VAR_DECL', 'Verbum', p.ID, p.expr)
 
     # ----- Versões com modificador const (Imutabile) -----
     @_('IMUTABILE SANGUIS ID EQUALS expr SEMI')
     def statement(self, p):
-        return ('VAR_DECL', 'const int', p.ID, p.expr)
+        return ('VAR_DECL', 'const Sanguis', p.ID, p.expr)
 
     @_('IMUTABILE SANGUIS_FLUENS ID EQUALS expr SEMI')
     def statement(self, p):
-        return ('VAR_DECL', 'const float', p.ID, p.expr)
+        return ('VAR_DECL', 'const Sanguis_Fluens', p.ID, p.expr)
 
     @_('IMUTABILE VERITAS ID EQUALS expr SEMI')
     def statement(self, p):
-        return ('VAR_DECL', 'const bool', p.ID, p.expr)
+        return ('VAR_DECL', 'const Veritas', p.ID, p.expr)
 
     @_('IMUTABILE AETERNUM ID EQUALS expr SEMI')
     def statement(self, p):
-        return ('VAR_DECL', 'const unsigned long', p.ID, p.expr)
+        return ('VAR_DECL', 'const Aeternum', p.ID, p.expr)
 
     @_('IMUTABILE VERBUM ID EQUALS expr SEMI')
     def statement(self, p):
-        return ('VAR_DECL', 'const String', p.ID, p.expr)
+        return ('VAR_DECL', 'const Verbum', p.ID, p.expr)
 
     # ==========================================================
     # DECLARAÇÕES COM TIPO CUSTOM (qualquer ID como tipo)
@@ -177,15 +177,15 @@ class LDParser(Parser):
 
     @_('SANGUIS ID EQUALS expr')
     def for_init(self, p):
-        return ('VAR_DECL_NOSEMI', 'int', p.ID, p.expr)
+        return ('VAR_DECL_NOSEMI', 'Sanguis', p.ID, p.expr)
 
     @_('SANGUIS_FLUENS ID EQUALS expr')
     def for_init(self, p):
-        return ('VAR_DECL_NOSEMI', 'float', p.ID, p.expr)
+        return ('VAR_DECL_NOSEMI', 'Sanguis_Fluens', p.ID, p.expr)
 
     @_('AETERNUM ID EQUALS expr')
     def for_init(self, p):
-        return ('VAR_DECL_NOSEMI', 'unsigned long', p.ID, p.expr)
+        return ('VAR_DECL_NOSEMI', 'Aeternum', p.ID, p.expr)
 
     @_('ID EQUALS expr')
     def for_init(self, p):
@@ -245,27 +245,27 @@ class LDParser(Parser):
     # ==========================================================
     @_('VAZIUM ID LPAREN params RPAREN LBRACE statements RBRACE')
     def statement(self, p):
-        return ('FUNC_DEF', 'void', p.ID, p.params, p.statements)
+        return ('FUNC_DEF', 'Vazium', p.ID, p.params, p.statements)
 
     @_('SANGUIS ID LPAREN params RPAREN LBRACE statements RBRACE')
     def statement(self, p):
-        return ('FUNC_DEF', 'int', p.ID, p.params, p.statements)
+        return ('FUNC_DEF', 'Sanguis', p.ID, p.params, p.statements)
 
     @_('SANGUIS_FLUENS ID LPAREN params RPAREN LBRACE statements RBRACE')
     def statement(self, p):
-        return ('FUNC_DEF', 'float', p.ID, p.params, p.statements)
+        return ('FUNC_DEF', 'Sanguis_Fluens', p.ID, p.params, p.statements)
 
     @_('VERITAS ID LPAREN params RPAREN LBRACE statements RBRACE')
     def statement(self, p):
-        return ('FUNC_DEF', 'bool', p.ID, p.params, p.statements)
+        return ('FUNC_DEF', 'Veritas', p.ID, p.params, p.statements)
 
     @_('AETERNUM ID LPAREN params RPAREN LBRACE statements RBRACE')
     def statement(self, p):
-        return ('FUNC_DEF', 'unsigned long', p.ID, p.params, p.statements)
+        return ('FUNC_DEF', 'Aeternum', p.ID, p.params, p.statements)
 
     @_('VERBUM ID LPAREN params RPAREN LBRACE statements RBRACE')
     def statement(self, p):
-        return ('FUNC_DEF', 'String', p.ID, p.params, p.statements)
+        return ('FUNC_DEF', 'Verbum', p.ID, p.params, p.statements)
 
     @_('param_list')
     def params(self, p):
@@ -285,23 +285,23 @@ class LDParser(Parser):
 
     @_('SANGUIS ID')
     def param(self, p):
-        return ('int', p.ID)
+        return ('Sanguis', p.ID)
 
     @_('SANGUIS_FLUENS ID')
     def param(self, p):
-        return ('float', p.ID)
+        return ('Sanguis_Fluens', p.ID)
 
     @_('VERITAS ID')
     def param(self, p):
-        return ('bool', p.ID)
+        return ('Veritas', p.ID)
 
     @_('AETERNUM ID')
     def param(self, p):
-        return ('unsigned long', p.ID)
+        return ('Aeternum', p.ID)
 
     @_('VERBUM ID')
     def param(self, p):
-        return ('String', p.ID)
+        return ('Verbum', p.ID)
 
     # ==========================================================
     # FUNÇÕES NATIVAS (statements)
@@ -455,24 +455,61 @@ class LDParser(Parser):
 
     @_('IGNIS')
     def expr(self, p):
-        return ('CONST_STATE', 'HIGH')
+        return ('CONST_STATE', 'Ignis')
 
     @_('TENEBRAE')
     def expr(self, p):
-        return ('CONST_STATE', 'LOW')
+        return ('CONST_STATE', 'Tenebrae')
 
     @_('ENTRADA')
     def expr(self, p):
-        return ('CONST_PIN_MODE', 'INPUT')
+        return ('CONST_PIN_MODE', 'Entrada')
 
     @_('SAIDA')
     def expr(self, p):
-        return ('CONST_PIN_MODE', 'OUTPUT')
+        return ('CONST_PIN_MODE', 'Saida')
+
+    # Predefined mistic constants
+    @_('NEXUS_FIDELIS')
+    def expr(self, p):
+        return ('CONST_STATE', 'NexusFidelis')
+
+    @_('ALBUS')
+    def expr(self, p):
+        return ('CONST_STATE', 'Albus')
+
+    @_('SSD1306_TENSA')
+    def expr(self, p):
+        return ('CONST_STATE', 'SSD1306_Tensa')
 
     # --- Chamadas como expressão ---
     @_('VERBUM LPAREN args RPAREN')
     def expr(self, p):
-        return ('FUNC_CALL', 'String', p.args)
+        return ('FUNC_CALL', 'Verbum', p.args)
+
+    @_('TEMPERARE_CRONOS LPAREN args RPAREN SEMI')
+    def statement(self, p):
+        return ('TEMPERARE_CRONOS', p.args)
+
+    @_('SIGNARE_CAOS LPAREN args RPAREN SEMI')
+    def statement(self, p):
+        return ('SIGNARE_CAOS', p.args)
+
+    @_('SACRATUM LPAREN expr RPAREN')
+    def expr(self, p):
+        return ('SACRATUM', p.expr)
+
+    @_('INANIS LPAREN expr RPAREN')
+    def expr(self, p):
+        return ('INANIS', p.expr)
+
+    @_('AEVUM LPAREN expr RPAREN')
+    def expr(self, p):
+        return ('AEVUM', p.expr)
+
+    @_('VERBUM_AEVUM LPAREN expr RPAREN')
+    def expr(self, p):
+        return ('VERBUM_AEVUM', p.expr)
 
     @_('ID LPAREN args RPAREN')
     def expr(self, p):

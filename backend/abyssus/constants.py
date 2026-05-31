@@ -58,6 +58,17 @@ ritual_keywords = {
     # --- Tipos adicionais ---
     'Inscriptio': 'INSCRIPTIO',           # const char*
     'Littera': 'LITTERA',                 # char
+
+    # --- Novos rituais e constantes para Pureza de Hardware ---
+    'TemperareCronos': 'TEMPERARE_CRONOS',
+    'Aevum': 'AEVUM',
+    'VerbumAevum': 'VERBUM_AEVUM',
+    'SignareCaos': 'SIGNARE_CAOS',
+    'Inanis': 'INANIS',
+    'Sacratum': 'SACRATUM',
+    'NexusFidelis': 'NEXUS_FIDELIS',
+    'Albus': 'ALBUS',
+    'SSD1306_Tensa': 'SSD1306_TENSA',
 }
 
 # Padrões Regex (Expressões Regulares)
