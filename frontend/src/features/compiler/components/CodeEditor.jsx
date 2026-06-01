@@ -4,16 +4,14 @@ import Editor from '@monaco-editor/react';
 export default function CodeEditor({ codigo, setCodigo, onEditorMount }) {
   const editorRef = useRef(null);
   const monacoRef = useRef(null);
-  const lastValueRef = useRef(codigo);
   const providerRef = useRef(null);
 
   const handleEditorMount = useCallback((editor, monaco) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
 
-    // Inicializar o valor na primeira montagem
-    editor.setValue(codigo);
-    lastValueRef.current = codigo;
+    // O valor inicial é controlado pela prop `value` do <Editor>, não setamos
+    // manualmente aqui para não resetar o cursor.
 
     // Limpar provedor anterior se existir nesta ref para evitar duplicidade
     if (providerRef.current) {
@@ -97,7 +95,6 @@ export default function CodeEditor({ codigo, setCodigo, onEditorMount }) {
 
   const handleChange = useCallback((value) => {
     if (value !== undefined) {
-      lastValueRef.current = value;
       setCodigo(value);
     }
   }, [setCodigo]);
@@ -110,14 +107,6 @@ export default function CodeEditor({ codigo, setCodigo, onEditorMount }) {
       }
     };
   }, []);
-
-  // Sincronizar alterações que vêm de fora do editor (como templates)
-  useEffect(() => {
-    if (editorRef.current && codigo !== lastValueRef.current) {
-      editorRef.current.setValue(codigo);
-      lastValueRef.current = codigo;
-    }
-  }, [codigo]);
 
   return (
     <div
@@ -132,6 +121,7 @@ export default function CodeEditor({ codigo, setCodigo, onEditorMount }) {
         height="100%"
         theme="vs-dark"
         defaultLanguage="c"
+        defaultValue={codigo}
         onChange={handleChange}
         onMount={handleEditorMount}
         options={{
