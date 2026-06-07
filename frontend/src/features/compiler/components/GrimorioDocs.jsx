@@ -274,6 +274,76 @@ const KEYWORDS = [
     category: 'META',
     description: 'O valor nulo místico oficial da linguagem para apontar a lugar nenhum.',
     example: 'Tempus agora = Aevum(Nihil);'
+  },
+  {
+    word: 'Aeternum',
+    cpp: 'unsigned long',
+    category: 'TYPES',
+    description: 'Declara uma variável numérica inteira sem sinal de 32 bits. Ideal para rastrear grandes intervalos de tempo com o Cronos.',
+    example: 'Aeternum tempoAnterior = Cronos();'
+  },
+  {
+    word: 'Verum',
+    cpp: 'true',
+    category: 'TYPES',
+    description: 'Literal booleano verdadeiro. Representa a presença de verdade lógica ou luz.',
+    example: 'Veritas sensorAtivo = Verum;'
+  },
+  {
+    word: 'Falsum',
+    cpp: 'false',
+    category: 'TYPES',
+    description: 'Literal booleano falso. Representa a ausência de verdade lógica ou trevas.',
+    example: 'Veritas wifiConectado = Falsum;'
+  },
+  {
+    word: 'Ignis',
+    cpp: 'HIGH',
+    category: 'HARDWARE',
+    description: 'Constante que representa o estado digital Alto (nível lógico 1 / VCC).',
+    example: 'Incantare(led, Ignis);'
+  },
+  {
+    word: 'Tenebrae',
+    cpp: 'LOW',
+    category: 'HARDWARE',
+    description: 'Constante que representa o estado digital Baixo (nível lógico 0 / GND).',
+    example: 'Incantare(led, Tenebrae);'
+  },
+  {
+    word: 'Entrada',
+    cpp: 'INPUT',
+    category: 'HARDWARE',
+    description: 'Define um pino físico em modo de entrada para leitura de sensores.',
+    example: 'Habitus(15, Entrada);'
+  },
+  {
+    word: 'Saida',
+    cpp: 'OUTPUT',
+    category: 'HARDWARE',
+    description: 'Define um pino físico em modo de saída para controle de atuadores ou LEDs.',
+    example: 'Habitus(2, Saida);'
+  },
+  {
+    word: 'NexusFidelis',
+    cpp: 'WL_CONNECTED',
+    category: 'HARDWARE',
+    description: 'Constante de estado que confirma o estabelecimento de uma conexão WiFi bem sucedida.',
+    example: 'Tormentum (WiFi.status() != NexusFidelis) { ... }'
+  },
+  {
+    word: 'Albus',
+    cpp: 'WHITE',
+    category: 'HARDWARE',
+    description: 'Constante de cor branca utilizada para desenhar em displays gráficos ou OLEDs.',
+    example: 'display.setTextColor(Albus);'
+  },
+  {
+    word: 'SSD1306_Tensa',
+    cpp: 'SSD1306_SWITCHCAPVCC',
+    category: 'HARDWARE',
+    description: 'Constante de controle de tensão para inicialização de displays baseados no chip SSD1306.',
+    example: 'display.begin(SSD1306_Tensa, 0x3C);'
   }
 ];
 

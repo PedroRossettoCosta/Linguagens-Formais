@@ -36,10 +36,15 @@ export default function CodeEditor({ codigo, setCodigo, onEditorMount }) {
             { label: 'Veritas', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'Veritas', detail: 'Tipo lógico (Veritas / bool)', range },
             { label: 'Vazium', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'Vazium', detail: 'Tipo vazio (Vazium / void)', range },
             { label: 'Tempus', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'Tempus', detail: 'Tipo tempo/data (Tempus / time_t)', range },
+            { label: 'Aeternum', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'Aeternum', detail: 'Tipo inteiro longo sem sinal (Aeternum / unsigned long)', range },
+            { label: 'Verbum', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'Verbum', detail: 'Tipo texto dinâmico (Verbum / String)', range },
+            { label: 'Inscriptio', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'Inscriptio', detail: 'Tipo texto estático constante (Inscriptio / const char*)', range },
+            { label: 'Littera', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'Littera', detail: 'Tipo caractere (Littera / char)', range },
 
             // Literais e constantes
             { label: 'Verum', kind: monaco.languages.CompletionItemKind.Value, insertText: 'Verum', detail: 'Verdadeiro (Verum / true)', range },
             { label: 'Falsum', kind: monaco.languages.CompletionItemKind.Value, insertText: 'Falsum', detail: 'Falso (Falsum / false)', range },
+            { label: 'Nihil', kind: monaco.languages.CompletionItemKind.Value, insertText: 'Nihil', detail: 'Ponteiro nulo místico (Nihil / nullptr)', range },
             { label: 'Ignis', kind: monaco.languages.CompletionItemKind.Constant, insertText: 'Ignis', detail: 'Estado Alto (Ignis / HIGH)', range },
             { label: 'Tenebrae', kind: monaco.languages.CompletionItemKind.Constant, insertText: 'Tenebrae', detail: 'Estado Baixo (Tenebrae / LOW)', range },
             { label: 'Entrada', kind: monaco.languages.CompletionItemKind.Constant, insertText: 'Entrada', detail: 'Modo Entrada (Entrada / INPUT)', range },
@@ -55,6 +60,8 @@ export default function CodeEditor({ codigo, setCodigo, onEditorMount }) {
             { label: 'Tormentum', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'Tormentum ($1) {\n\t$0\n}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, detail: 'Repetição Enquanto (Tormentum / while)', range },
             { label: 'Iterum', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'Iterum (Sanguis i = 0; i < $1; i = i + 1) {\n\t$0\n}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, detail: 'Repetição Contada (Iterum / for)', range },
             { label: 'Redditum', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'Redditum ', detail: 'Retorno (Redditum / return)', range },
+            { label: 'Frangere', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'Frangere;', detail: 'Interrompe laço (Frangere / break)', range },
+            { label: 'Pergere', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'Pergere;', detail: 'Pula para próxima iteração (Pergere / continue)', range },
 
             // Funções nativas do hardware
             { label: 'Habitus', kind: monaco.languages.CompletionItemKind.Method, insertText: 'Habitus(${1:led}, ${2:Saida});', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, detail: 'Configura pino (Habitus / pinMode)', range },
@@ -71,6 +78,7 @@ export default function CodeEditor({ codigo, setCodigo, onEditorMount }) {
             { label: 'Invocare', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'Invocare ', detail: 'Inclui biblioteca (Invocare / #include)', range },
             { label: 'Decretum', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'Decretum ', detail: 'Declara macro (Decretum / #define)', range },
             { label: 'Imutabile', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'Imutabile ', detail: 'Declara constante (Imutabile / const)', range },
+            { label: 'Caos', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'Caos "${1:codigo_cpp}";', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, detail: 'Injeção direta de código C++ bruto (Caos / raw C++)', range },
 
             // Rituais e constantes para Pureza de Hardware
             { label: 'TemperareCronos', kind: monaco.languages.CompletionItemKind.Method, insertText: 'TemperareCronos(${1:0}, ${2:0}, "${3:pool.ntp.org}", "${4:time.nist.gov}");', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet, detail: 'Sincroniza hora NTP (TemperareCronos / configTime)', range },
