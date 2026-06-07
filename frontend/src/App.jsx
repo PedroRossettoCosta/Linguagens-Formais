@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useIntro } from '@/hooks/useIntro';
 import { useCompiler } from '@/hooks/useCompiler';
 import Header from '@/components/layout/Header';
@@ -6,6 +6,7 @@ import Panel from '@/components/ui/Panel';
 import ErrorToast from '@/components/ui/ErrorToast';
 import ASTGraph from '@/features/compiler/components/ASTGraph';
 import CodeEditor from '@/features/compiler/components/CodeEditor';
+import GrimorioDocs from '@/features/compiler/components/GrimorioDocs';
 
 function App() {
   const { despertando, esconderIntro } = useIntro();
@@ -25,6 +26,8 @@ function App() {
     compilar,
     baixarArquivoIno
   } = useCompiler();
+
+  const [activeTab, setActiveTab] = useState('ritual');
 
   const cppPanelContent = useMemo(() => (
     <pre className="text-xs overflow-auto h-full whitespace-pre-wrap break-words p-2 font-mono">
@@ -109,32 +112,34 @@ function App() {
         </div>
       )}
 
-      <Header status={status} statusColor={statusColor} />
+      <Header status={status} statusColor={statusColor} activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      <div className="flex gap-4 mb-5">
-        <button
-          onClick={(e) => {
-            e.currentTarget.blur();
-            compilar();
-          }}
-          className="bg-abyss-accent hover:bg-abyss-accent-hover text-white font-bold py-3 px-6 uppercase tracking-widest transition-all duration-300 shadow-[0_0_10px_#ff3c00] hover:shadow-[0_0_25px_#ff3c00]"
-        >
-          Executar
-        </button>
+      {activeTab === 'ritual' ? (
+        <>
+          <div className="flex gap-4 mb-5">
+            <button
+              onClick={(e) => {
+                e.currentTarget.blur();
+                compilar();
+              }}
+              className="bg-abyss-accent hover:bg-abyss-accent-hover text-white font-bold py-3 px-6 uppercase tracking-widest transition-all duration-300 shadow-[0_0_10px_#ff3c00] hover:shadow-[0_0_25px_#ff3c00]"
+            >
+              Executar
+            </button>
 
-        <button
-          onClick={(e) => {
-            e.currentTarget.blur();
-            baixarArquivoIno();
-          }}
-          disabled={!resultado.cpp || resultado.cpp.startsWith('Erro')}
-          className="bg-abyss-panel border border-abyss-accent text-abyss-accent hover:bg-gray-900 hover:text-white font-bold py-3 px-6 uppercase tracking-widest transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Baixar (.ino)
-        </button>
-      </div>
+            <button
+              onClick={(e) => {
+                e.currentTarget.blur();
+                baixarArquivoIno();
+              }}
+              disabled={!resultado.cpp || resultado.cpp.startsWith('Erro')}
+              className="bg-abyss-panel border border-abyss-accent text-abyss-accent hover:bg-gray-900 hover:text-white font-bold py-3 px-6 uppercase tracking-widest transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Baixar (.ino)
+            </button>
+          </div>
 
-      <div className="flex-1 flex flex-col gap-4 overflow-hidden relative">
+          <div className="flex-1 flex flex-col gap-4 overflow-hidden relative">
         {/* Editor - Seção Expansível In-Place */}
         <div className={`transition-all duration-300 ${
           modalState.editorFullscreen 
@@ -220,6 +225,10 @@ function App() {
 
         </div>
       </div>
+        </>
+      ) : (
+        <GrimorioDocs />
+      )}
 
       <ErrorToast
         erro={erroAtual}
