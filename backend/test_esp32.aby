@@ -19,7 +19,7 @@ Inscriptio ssid = "";
 Inscriptio password = "";
 
 // Configuracoes MQTT
-Inscriptio mqtt_server = "mqtt.eclipseprojects.io";
+Inscriptio mqtt_server = "test.mosquitto.org";
 // Inscriptio mqtt_alert_topic = "casa/alertas/temperatura";
 Inscriptio mqtt_analysis = "casa/metricas/esp32";
 
