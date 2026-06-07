@@ -9,6 +9,7 @@ ritual_keywords = {
     'Sanguis_Fluens': 'SANGUIS_FLUENS',   # float
     'Veritas': 'VERITAS',                 # bool
     'Vazium': 'VAZIUM',                   # void
+    'Tempus': 'TEMPUS',                   # time_t (tempo epoch/Unix)
 
     # --- Literais booleanos ---
     'Verum': 'VERUM',                     # true

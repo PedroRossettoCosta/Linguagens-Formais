@@ -84,6 +84,10 @@ class LDParser(Parser):
     def statement(self, p):
         return ('VAR_DECL', 'Verbum', p.ID, p.expr)
 
+    @_('TEMPUS ID EQUALS expr SEMI')
+    def statement(self, p):
+        return ('VAR_DECL', 'Tempus', p.ID, p.expr)
+
     # ----- Versões com modificador const (Imutabile) -----
     @_('IMUTABILE SANGUIS ID EQUALS expr SEMI')
     def statement(self, p):
@@ -104,6 +108,10 @@ class LDParser(Parser):
     @_('IMUTABILE VERBUM ID EQUALS expr SEMI')
     def statement(self, p):
         return ('VAR_DECL', 'const Verbum', p.ID, p.expr)
+
+    @_('IMUTABILE TEMPUS ID EQUALS expr SEMI')
+    def statement(self, p):
+        return ('VAR_DECL', 'const Tempus', p.ID, p.expr)
 
     # ==========================================================
     # DECLARAÇÕES COM TIPO CUSTOM (qualquer ID como tipo)
@@ -187,6 +195,10 @@ class LDParser(Parser):
     def for_init(self, p):
         return ('VAR_DECL_NOSEMI', 'Aeternum', p.ID, p.expr)
 
+    @_('TEMPUS ID EQUALS expr')
+    def for_init(self, p):
+        return ('VAR_DECL_NOSEMI', 'Tempus', p.ID, p.expr)
+
     @_('ID EQUALS expr')
     def for_init(self, p):
         return ('ASSIGN_NOSEMI', p.ID, p.expr)
@@ -267,6 +279,10 @@ class LDParser(Parser):
     def statement(self, p):
         return ('FUNC_DEF', 'Verbum', p.ID, p.params, p.statements)
 
+    @_('TEMPUS ID LPAREN params RPAREN LBRACE statements RBRACE')
+    def statement(self, p):
+        return ('FUNC_DEF', 'Tempus', p.ID, p.params, p.statements)
+
     @_('param_list')
     def params(self, p):
         return p.param_list
@@ -302,6 +318,10 @@ class LDParser(Parser):
     @_('VERBUM ID')
     def param(self, p):
         return ('Verbum', p.ID)
+
+    @_('TEMPUS ID')
+    def param(self, p):
+        return ('Tempus', p.ID)
 
     # ==========================================================
     # FUNÇÕES NATIVAS (statements)

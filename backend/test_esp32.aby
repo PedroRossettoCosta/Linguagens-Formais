@@ -84,13 +84,15 @@ Vazium Exordium() {
 
     // Aguarda sincronizacao com NTP
     Susurro("Aguardando sincronizacao NTP");
-    Aeternum now = Aevum(Nihil);
+    Tempus now = Aevum(Nihil);
     Tormentum (now < 100000) {
         Mora(500);
         Susurro(".");
         now = Aevum(Nihil);
     }
-    Revelare("Tempo sincronizado: " + VerbumAevum(&now));
+    Revelare("");
+    Susurro("Tempo sincronizado: ");
+    Revelare(VerbumAevum(&now));
 
     client.setServer(mqtt_server, 1883);
 
@@ -124,7 +126,7 @@ Vazium Inferna() {
 
         // Envia alertas somente quando a temperatura sair dos limites
         Si ((t > TEMP_MAX || t < TEMP_MIN) && t != lastTemp) {
-            Caos "StaticJsonDocument<128> perfJson;";
+            Caos "JsonDocument perfJson;";
             perfJson["ts_esp32_millis"] = Cronos();
             perfJson["ts_esp32_real"] = Aevum(Nihil);
             perfJson["t"] = t;

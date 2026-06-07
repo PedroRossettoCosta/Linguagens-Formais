@@ -34,6 +34,7 @@ def ast_to_graph_node(node):
         'Aeternum': 'Aeternum',
         'Inscriptio': 'Inscriptio',
         'Littera': 'Littera',
+        'Tempus': 'Tempus',
     }
     
     label = ntype

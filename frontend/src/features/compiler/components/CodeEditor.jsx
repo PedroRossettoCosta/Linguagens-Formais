@@ -35,6 +35,7 @@ export default function CodeEditor({ codigo, setCodigo, onEditorMount }) {
             { label: 'Sanguis_Fluens', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'Sanguis_Fluens', detail: 'Tipo decimal (Sanguis_Fluens / float)', range },
             { label: 'Veritas', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'Veritas', detail: 'Tipo lógico (Veritas / bool)', range },
             { label: 'Vazium', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'Vazium', detail: 'Tipo vazio (Vazium / void)', range },
+            { label: 'Tempus', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'Tempus', detail: 'Tipo tempo/data (Tempus / time_t)', range },
 
             // Literais e constantes
             { label: 'Verum', kind: monaco.languages.CompletionItemKind.Value, insertText: 'Verum', detail: 'Verdadeiro (Verum / true)', range },

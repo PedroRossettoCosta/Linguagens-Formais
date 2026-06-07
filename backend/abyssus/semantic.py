@@ -32,7 +32,7 @@ class LDSemanticAnalyzer:
             
             # Novos rituais nativos puros de hardware do Abyssus
             'TemperareCronos': ('Vazium', ['Sanguis', 'Sanguis', 'Inscriptio', 'Inscriptio']),
-            'Aevum': ('Aeternum', ['any']),
+            'Aevum': ('Tempus', ['any']),
             'VerbumAevum': ('Verbum', ['any']),
             'SignareCaos': ('Vazium', ['any', 'any']),
             'Inanis': ('Veritas', ['any']),
@@ -152,7 +152,7 @@ class LDSemanticAnalyzer:
                 clean_type = var_type
 
             # Evitar string atribuída para int/float diretamente
-            if clean_type in ('Sanguis', 'Sanguis_Fluens', 'Aeternum') and expr_type == 'Verbum':
+            if clean_type in ('Sanguis', 'Sanguis_Fluens', 'Aeternum', 'Tempus') and expr_type == 'Verbum':
                 self.error(
                     1,
                     f"Atribuição Profana: O receptáculo '{name}' (tipo {clean_type}) não pode receber uma oferenda de Texto (Verbum).",
@@ -203,7 +203,7 @@ class LDSemanticAnalyzer:
                         "Remova a atribuição ou declare a variável sem o modificador 'Imutabile'."
                     )
                 # Tipo estrito: int/float recebendo String
-                elif var_type in ('Sanguis', 'Sanguis_Fluens', 'Aeternum') and expr_type == 'Verbum':
+                elif var_type in ('Sanguis', 'Sanguis_Fluens', 'Aeternum', 'Tempus') and expr_type == 'Verbum':
                     self.error(
                         1,
                         f"Atribuição Profana: O receptáculo '{name}' (tipo {var_type}) não suporta recebimento de texto diretamente.",
@@ -487,7 +487,7 @@ class LDSemanticAnalyzer:
             return 'Veritas'
         elif ntype == 'AEVUM':
             self.visit(node[1])
-            return 'Aeternum'
+            return 'Tempus'
         elif ntype == 'VERBUM_AEVUM':
             self.visit(node[1])
             return 'Verbum'
