@@ -115,7 +115,7 @@ export function useCompiler() {
     }
   };
 
-  const baixarArquivoIoT = () => {
+  const baixarArquivoIno = () => {
     if (!resultado.cpp || resultado.cpp.startsWith('Erro')) {
       return;
     }
@@ -125,7 +125,7 @@ export function useCompiler() {
     
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'ritual_sagrado.iot';
+    link.download = 'ritual_sagrado.ino';
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
@@ -145,6 +145,6 @@ export function useCompiler() {
     setModalOpen,
     handleEditorMount,
     compilar,
-    baixarArquivoIoT
+    baixarArquivoIno
   };
 }

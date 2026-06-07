@@ -23,7 +23,7 @@ function App() {
     setModalOpen,
     handleEditorMount,
     compilar,
-    baixarArquivoIoT
+    baixarArquivoIno
   } = useCompiler();
 
   const cppPanelContent = useMemo(() => (
@@ -125,12 +125,12 @@ function App() {
         <button
           onClick={(e) => {
             e.currentTarget.blur();
-            baixarArquivoIoT();
+            baixarArquivoIno();
           }}
           disabled={!resultado.cpp || resultado.cpp.startsWith('Erro')}
           className="bg-abyss-panel border border-abyss-accent text-abyss-accent hover:bg-gray-900 hover:text-white font-bold py-3 px-6 uppercase tracking-widest transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Baixar (.iot)
+          Baixar (.ino)
         </button>
       </div>
 
