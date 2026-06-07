@@ -120,12 +120,21 @@ export function useCompiler() {
       return;
     }
     
+    const agora = new Date();
+    const ano = agora.getFullYear();
+    const mes = String(agora.getMonth() + 1).padStart(2, '0');
+    const dia = String(agora.getDate()).padStart(2, '0');
+    const hora = String(agora.getHours()).padStart(2, '0');
+    const min = String(agora.getMinutes()).padStart(2, '0');
+    const seg = String(agora.getSeconds()).padStart(2, '0');
+    const timestamp = `${ano}${mes}${dia}_${hora}${min}${seg}`;
+
     const blob = new Blob([resultado.cpp], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'ritual_sagrado.ino';
+    link.download = `ritual_sagrado_${timestamp}.ino`;
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);

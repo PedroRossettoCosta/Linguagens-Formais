@@ -10,6 +10,7 @@ class LDTranspiler:
             'Aeternum': 'unsigned long',
             'Inscriptio': 'const char*',
             'Littera': 'char',
+            'Tempus': 'time_t',
         }
         if t.startswith('const '):
             base = t[6:]
